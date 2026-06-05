@@ -84,4 +84,8 @@ export class CreateGHNOrderDTO {
     @Type(() => Number)
     @IsNumber()
     serviceId !: number;
+
+    @Type(() => Number)
+    @IsNumber()
+    orderId !: number;
 }

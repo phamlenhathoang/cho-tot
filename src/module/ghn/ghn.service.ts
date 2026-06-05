@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { GetShipFeeDTO } from './dto/get-ship-fee.dto';
 import { CreateGHNOrderDTO } from './dto/create-ghn-order.dto';
+import { TrackingService } from '../tracking/tracking.service';
 
 @Injectable()
 export class GhnService {
@@ -193,6 +194,25 @@ export class GhnService {
             return response.data.data.order_code;
         } catch (error) {
             throw error
+        }
+    }
+
+    async getTrackingInfo(orderCode: string) {
+        try {
+            const response = await firstValueFrom(
+                this.httpService.post(
+                    `${this.ghnConfig.baseUrl}/shiip/public-api/v2/shipping-order/detail`,
+                    {
+                        order_code: orderCode
+                    },  
+                    {
+                        headers: this.headers
+                    }
+                )
+            )
+            return response.data.data.status;
+        } catch (error) {
+            throw error;
         }
     }
 }
