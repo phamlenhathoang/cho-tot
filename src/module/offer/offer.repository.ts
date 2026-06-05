@@ -1,32 +1,32 @@
 import { Injectable } from "@nestjs/common";
-import { OfferStatus } from "@prisma/client";
+import { OfferStatus, Prisma } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
-export class OfferRepository{
+export class OfferRepository {
     constructor(
         private readonly prismaService: PrismaService
-    ){}
+    ) { }
 
-    async getOfferById(offerId: number, userId: number){
+    async getOfferById(offerId: number, userId: number) {
         return await this.prismaService.offer.findFirst({
-            where:{
+            where: {
                 id: offerId,
                 offerStatus: OfferStatus.PENDING,
-                post:{
+                post: {
                     authorId: userId
                 }
             },
-            include:{
+            include: {
                 buyer: {
-                    include:{
+                    include: {
                         addresss: true
                     }
                 },
-                post:{
-                    include:{
+                post: {
+                    include: {
                         author: {
-                            include:{
+                            include: {
                                 addresss: true
                             }
                         },
@@ -36,20 +36,76 @@ export class OfferRepository{
         })
     }
 
-    async updateStatusOffer(id: number){
-        return await this.prismaService.offer.update({
-            where:{
+    async acceptOffer(id: number, tx?: Prisma.TransactionClient) {
+        const prisma = tx || this.prismaService;
+        return await prisma.offer.update({
+            where: {
                 id: id
-            },data:{
+            }, data: {
                 offerStatus: OfferStatus.ACCEPTED
             }
         })
     }
 
-    async createOffer(offer: any){
+    async rejectOffer(postId: number, offerId: number, tx?: Prisma.TransactionClient) {
+        const prisma = tx || this.prismaService;
+        return await prisma.offer.updateMany({
+            where: {
+                postId: postId,
+                id:{
+                    not: offerId
+                }
+            }, data: {
+                offerStatus: OfferStatus.REJECTED
+            }
+        })
+    }
+
+    async createOffer(offer: any) {
         return await this.prismaService.offer.create({
             data: offer
         })
     }
 
+    async updateOffer(offerId: number, offerStatus: OfferStatus, tx?: Prisma.TransactionClient) {
+        const prisma = tx || this.prismaService;
+        return await prisma.offer.update({
+            where: {
+                id: offerId
+            },
+            data: {
+                offerStatus
+            }
+        })
+    }
+
+    async getOffersByPostId(postId: number|undefined, userId: number) {
+        console.log(postId, userId)
+        return await this.prismaService.offer.findMany({
+            where: {
+                ...(postId ? {postId} : {}),
+                OR: [
+                    {post: 
+                        {authorId: userId}
+                    },
+                    {buyerId: userId}
+                ]
+            },
+            include: {
+                post: true,
+            }
+        })
+    }
+    
+    async getAllOffersByUser(userId: number) {
+        try{
+            return await this.prismaService.offer.findMany({
+            where: {
+                buyerId: userId
+            }
+        })
+        }catch(error){
+            throw error;
+        }
+    }
 }

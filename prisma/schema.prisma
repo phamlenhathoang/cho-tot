@@ -138,7 +138,6 @@ enum OrderStatus {
   CANCELED
   PENDING
   ACCEPTED
-  SHIPPING
   COMPLETED
 }
 
@@ -155,13 +154,24 @@ model Order{
   postId    Int
   post  Post @relation("OrderPost", fields:[postId], references:[id])
 
-  codeId String?
+  codeId String? @unique
   serviceId Int?
 
   orderStatus OrderStatus @default(PENDING)
   shipFee Decimal? @default(0)    @db.Decimal(18, 2)
   totalAmount  Decimal?       @db.Decimal(18, 2)
   createdAt DateTime @default(now())
+  trackings    OrderTracking[]  @relation("TrackingOrder")
+}
+
+model OrderTracking{
+  id    Int   @id   @default(autoincrement())
+
+  orderId    Int   
+  order     Order @relation("TrackingOrder", fields:[orderId], references:[id])
+
+  statusOrderTracking   String
+  createAt    DateTime @default(now())
 }
 
 enum OfferStatus {

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { OfferService } from './offer.service';
 import { OfferController } from './offer.controller';
 import { OfferGateway } from '../auth/config/offer-gateway.config';
@@ -14,9 +14,11 @@ import { PostModule } from '../post/post.module';
     JwtModule.register({
       secret: process.env.JWT_SECRET,
     }),
-    OrderModule, PostModule
+    forwardRef(() => OrderModule),
+    PostModule
   ],
   controllers: [OfferController],
   providers: [OfferService, OfferGateway, WsJwtGuard, OfferRepository, TransactionService],
+  exports: [OfferService, OfferRepository]
 })
 export class OfferModule { }

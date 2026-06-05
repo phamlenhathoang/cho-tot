@@ -23,9 +23,9 @@ export class OfferService {
 
             return await this.transactionService.execute(
                 async(tx) => {
-                    const updateOffer = await this.offerRepo.updateStatusOffer(offerId);
-                    await this.orderService.createOrder(offer);
-
+                    const updateOffer = await this.offerRepo.acceptOffer(offerId, tx);
+                    await this.orderService.createOrder(offer,tx);
+                    await this.offerRepo.rejectOffer(offer.postId, offerId, tx);
                     return updateOffer
                 }
             )
@@ -47,7 +47,16 @@ export class OfferService {
                 price: offerdto.price,
             })
         } catch (error) {
-            console.log(error)
+            throw error;
         }
     }
+
+    async getOffersByPostId(postId: number|undefined, user: any){
+        return await this.offerRepo.getOffersByPostId(postId, user.id);
+    }
+
+    async getAllOffersByUser(userId: number){
+        return await this.offerRepo.getAllOffersByUser(userId);
+    }
+
 }

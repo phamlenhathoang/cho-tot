@@ -16,6 +16,7 @@ import { OfferModule } from './module/offer/offer.module';
 import { TransactionService } from './module/transaction/tracsaction.service';
 import { GhnModule } from './module/ghn/ghn.module';
 import { AddressModule } from './module/address/address.module';
+import { TrackingModule } from './module/tracking/tracking.module';
 
 @Module({
   imports: [UserModule, AuthModule, CategotyModule, ThumpnailModule, PostModule, ChatModule,
@@ -29,6 +30,7 @@ import { AddressModule } from './module/address/address.module';
     OfferModule,
     GhnModule,
     AddressModule,
+    TrackingModule,
   ],
   controllers: [AppController],
   providers: [AppService, TransactionService],
