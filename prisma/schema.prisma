@@ -1,0 +1,196 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role{
+  ADMIN
+  CUSTOMER
+}
+
+model User { 
+  id    Int     @id @default(autoincrement()) 
+  email String  @unique
+  name  String?
+  phone String?  @unique
+  password String?
+  role  Role @default(CUSTOMER)
+  isActive Boolean @default(true)
+  hashedRefreshToken String?
+  googleId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  posts Post[]
+  buyerConversations Conversation[] @relation("BuyerConversation")
+  sellerConversations Conversation[] @relation("SellerConversation")
+  messages Message[]
+  sallerOrders  Order[] @relation("SallerOrders")
+  buyerOrders  Order[] @relation("BuyerOrders")
+  buyerOffers  Offer[] @relation("BuyerOffers")
+  addresss    Address[]
+} 
+
+model Address{
+  id  Int   @id  @default(autoincrement())
+  userId  Int 
+  user  User  @relation(fields:[userId], references:[id])
+
+  street String
+
+  wardCode Int?
+  ward  String
+
+  districtId Int?
+  district  String
+
+  cityId Int?
+  city  String
+  
+  isDefault   Boolean  @default(false)
+}
+
+model Conversation {
+  id          Int @id @default(autoincrement())
+
+  buyerId     Int
+  buyer       User  @relation("BuyerConversation", fields: [buyerId], references: [id])
+
+  sellerId    Int
+  seller       User  @relation("SellerConversation", fields: [sellerId], references: [id])
+  postId      Int
+
+  messages    Message[]
+}
+
+model Message {
+  id              Int @id @default(autoincrement())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  conversationId  Int
+
+  senderId        Int
+
+  content         String
+
+  createdAt       DateTime @default(now())
+  sender  User @relation(fields:[senderId], references:[id])
+
+}
+
+model Category{
+  id        Int     @id @default(autoincrement()) 
+  name String 
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  posts Post[]
+}
+
+model Post { 
+  id        Int     @id @default(autoincrement()) 
+  title     String
+  content   String? @db.Text
+  price     Int?
+  width     Int?
+  length    Int?
+  height    Int?
+  weight    Int?
+  published Boolean @default(true) 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author    User    @relation(fields: [authorId], references: [id]) 
+  authorId  Int
+
+  category  Category @relation(fields: [categoryId], references: [id])
+  categoryId  Int 
+
+  images  Image[]   @relation("ImagePost")
+  orders  Order[]   @relation("OrderPost")
+  offers  Offer[]   @relation("OfferPost")
+} 
+
+model Image {
+  id        Int     @id @default(autoincrement()) 
+  description   String?
+  url String
+  isAvatar Boolean? @default(false)
+  published Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt  
+
+  post  Post?  @relation("ImagePost", fields:[postId], references: [id])
+  postId  Int?   
+}
+
+enum OrderStatus {
+  CANCELED
+  PENDING
+  ACCEPTED
+  COMPLETED
+}
+
+model Order{
+  id  Int @id @default(autoincrement())
+
+  sellerId  Int
+  seller  User @relation("SallerOrders", fields:[sellerId], references:[id])
+
+
+  buyerId   Int 
+  buyer   User @relation("BuyerOrders", fields:[buyerId], references:[id])
+
+  postId    Int
+  post  Post @relation("OrderPost", fields:[postId], references:[id])
+
+  codeId String? @unique
+  serviceId Int?
+
+  orderStatus OrderStatus @default(PENDING)
+  shipFee Decimal? @default(0)    @db.Decimal(18, 2)
+  totalAmount  Decimal?       @db.Decimal(18, 2)
+  createdAt DateTime @default(now())
+  trackings    OrderTracking[]  @relation("TrackingOrder")
+}
+
+model OrderTracking{
+  id    Int   @id   @default(autoincrement())
+
+  orderId    Int   
+  order     Order @relation("TrackingOrder", fields:[orderId], references:[id])
+
+  statusOrderTracking   String
+  createAt    DateTime @default(now())
+}
+
+enum OfferStatus {
+  CANCELED
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Offer{
+  id  Int @id @default(autoincrement())
+
+  buyerId   Int 
+  buyer User  @relation("BuyerOffers", fields:[buyerId], references:[id])
+
+  postId Int 
+  post  Post @relation("OfferPost", fields:[postId], references:[id])
+
+  offerStatus  OfferStatus   @default(PENDING)
+  price  Decimal        @db.Decimal(18, 2)
+  createAt DateTime @default(now())
+}
