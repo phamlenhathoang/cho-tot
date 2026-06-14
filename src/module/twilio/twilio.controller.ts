@@ -19,7 +19,7 @@ export class TwilioController {
 
   @Post("send-mail-otp")
   async sendOtpMail(@Body() sendMailOtpDTO : SendMailOtpDto) {
-    return await this.twilioService.sendOtpMail(sendMailOtpDTO.email)
+    return await this.twilioService.sendOtpMail(sendMailOtpDTO.email, sendMailOtpDTO.otp)
   }
   
 }

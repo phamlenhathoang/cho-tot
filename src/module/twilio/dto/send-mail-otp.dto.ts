@@ -1,6 +1,8 @@
 import {
   IsEmail,
   IsNotEmpty,
+  IsOptional,
+  IsString,
   MaxLength,
 } from "class-validator";
 
@@ -20,4 +22,8 @@ export class SendMailOtpDto {
       "Email must not exceed 255 characters",
   })
   email!: string;
+
+  @IsOptional()
+  @IsString()
+  otp !: string
 }

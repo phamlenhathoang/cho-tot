@@ -1,18 +1,26 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import Twilio from 'twilio';
 import { TwilioConfig } from '../auth/config/twilio.config';
+import { RedisService } from '../redis/redis.service';
+import { UserRepo } from '../user/user.repository';
 
 @Injectable()
 export class TwilioService {
 
     constructor(
-        private readonly twilioConfig: TwilioConfig
-    ) {}
+        private readonly twilioConfig: TwilioConfig,
+        private readonly redisService: RedisService,
+        private readonly userRepo: UserRepo
+    ) { }
 
     async sendVoiceOtp(phone: string, type: string) {
         try {
+            const user = await this.userRepo.getUserByPhone(phone);
+            if(!user){
+                throw new NotFoundException("User does not exist");
+            }
             const response = await this.twilioConfig.client.verify.v2
                 .services(this.twilioConfig.verifySid)
                 .verifications.create({
@@ -34,6 +42,10 @@ export class TwilioService {
 
     async verifyVoiceOtp(phone: string, code: string) {
         try {
+            const user = await this.userRepo.getUserByPhone(phone);
+            if(!user){
+                throw new NotFoundException("User does not exist");
+            }
             const response = await this.twilioConfig.client.verify.v2
                 .services(this.twilioConfig.verifySid)
                 .verificationChecks.create({
@@ -52,26 +64,46 @@ export class TwilioService {
         }
     }
 
-    async sendOtpMail(
-        email: string,
-    ) {
+    async sendOtpMail(email: string, otp?: string) {
+        const user = await this.userRepo.getUserByEmailAndPhone(email, null);
+        if(!user){
+            throw new NotFoundException("User does not exist");
+        }
+        if (!otp) {
+            const otp = Math.floor(
+                100000 + Math.random() * 900000
+            ).toString();
+            await this.redisService.set(email, otp, 300);
+            await this.twilioConfig.transporter.sendMail({
+                from: this.twilioConfig.mailUser,
+                to: email,
+                subject: "Verify OTP",
+                html: `
+                        <h2>Your OTP Code</h2>
 
-        const otp = Math.floor(
-            100000 + Math.random() * 900000
-        ).toString();
+                        <h1>${otp}</h1>
 
-        await this.twilioConfig.transporter.sendMail({
-            from: this.twilioConfig.mailUser,
-            to: email,
-            subject: "Verify OTP",
-            html: `
-        <h2>Your OTP Code</h2>
+                        <p>OTP expires in 5 minutes.</p>
+                    `,
+            });
+        } else {
+            const storedOtp = await this.redisService.get(email);
+            if (!storedOtp) {
+                throw new BadRequestException(
+                    'OTP expired'
+                );
+            }
 
-        <h1>${otp}</h1>
+            if (storedOtp !== otp) {
+                throw new BadRequestException(
+                    'OTP invalid'
+                );
+            }
 
-        <p>OTP expires in 5 minutes.</p>
-      `,
-        });
+            await this.redisService.delete(
+                `email`,
+            );
+        }
 
         return {
             success: true,

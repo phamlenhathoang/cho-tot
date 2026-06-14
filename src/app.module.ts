@@ -17,6 +17,7 @@ import { TransactionService } from './module/transaction/tracsaction.service';
 import { GhnModule } from './module/ghn/ghn.module';
 import { AddressModule } from './module/address/address.module';
 import { TrackingModule } from './module/tracking/tracking.module';
+import { RedisModule } from './module/redis/redis.module';
 
 @Module({
   imports: [UserModule, AuthModule, CategotyModule, ThumpnailModule, PostModule, ChatModule,
@@ -31,6 +32,7 @@ import { TrackingModule } from './module/tracking/tracking.module';
     GhnModule,
     AddressModule,
     TrackingModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService, TransactionService],

@@ -106,4 +106,12 @@ export class UserRepo {
             })
         });
     }
+
+     async getUserByPhone(phone: string) {
+        return this.prismaService.user.findFirst({
+            where:{
+                phone: phone
+            }
+        });
+    }
 }
