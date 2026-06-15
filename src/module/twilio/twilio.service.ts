@@ -18,7 +18,7 @@ export class TwilioService {
     async sendVoiceOtp(phone: string, type: string) {
         try {
             const user = await this.userRepo.getUserByPhone(phone);
-            if(!user){
+            if (!user) {
                 throw new NotFoundException("User does not exist");
             }
             const response = await this.twilioConfig.client.verify.v2
@@ -43,7 +43,7 @@ export class TwilioService {
     async verifyVoiceOtp(phone: string, code: string) {
         try {
             const user = await this.userRepo.getUserByPhone(phone);
-            if(!user){
+            if (!user) {
                 throw new NotFoundException("User does not exist");
             }
             const response = await this.twilioConfig.client.verify.v2
@@ -65,9 +65,14 @@ export class TwilioService {
     }
 
     async sendOtpMail(email: string, otp?: string) {
+        await this.redisService.set('test', 'hello');
+
+        const value = await this.redisService.get('test');
+
+        console.log(value);
         await this.twilioConfig.getTransporterlog();
         const user = await this.userRepo.getUserByEmailAndPhone(email, null);
-        if(!user){
+        if (!user) {
             throw new NotFoundException("User does not exist");
         }
         if (!otp) {

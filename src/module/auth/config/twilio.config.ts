@@ -22,7 +22,7 @@ export class TwilioConfig {
       },
     });
 
-    
+
   }
 
   get verifySid() {
@@ -33,12 +33,17 @@ export class TwilioConfig {
     return this.configService.getOrThrow("MAIL_USER");
   }
 
-  async getTransporterlog(){
-    console.log('MAIL_USER:', this.configService.get('MAIL_USER'));
-    console.log('MAIL_PASS exists:', !!this.configService.get('MAIL_PASS'));
+  async getTransporterlog() {
+    try {
+      console.log('MAIL_USER:', this.configService.get('MAIL_USER'));
+      console.log('MAIL_PASS exists:', !!this.configService.get('MAIL_PASS'));
 
-    await this.transporter.verify();
+      await this.transporter.verify();
 
-    console.log('✅ SMTP connected successfully');
+      console.log('✅ SMTP connected successfully');
+    } catch (error) {
+      console.error('❌ SMTP connection failed');
+      console.error(error);
+    }
   }
 }
