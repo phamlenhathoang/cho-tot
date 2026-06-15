@@ -60,7 +60,7 @@ export class AuthController {
     //   sameSite: 'none',
     //   maxAge: 24 * 60 * 60 * 1000,
     // });
-    res.redirect(`http://localhost:5173/?accessToken=${response.accessToken}`);
+    res.redirect(`https://cho-tot-production.up.railway.app/api/?accessToken=${response.accessToken}`);
   }
 
   @Public()
