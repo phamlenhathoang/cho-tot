@@ -48,4 +48,9 @@ export class OfferController {
   async getAllOffersByUser(@Req() rq) {
     return await this.offerService.getAllOffersByUser(rq.user.id)
   }
+
+  @Get()
+  async getAllOffer(){
+    return await this.offerService.getAllOffer()
+  }
 }

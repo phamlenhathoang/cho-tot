@@ -59,4 +59,7 @@ export class OfferService {
         return await this.offerRepo.getAllOffersByUser(userId);
     }
 
+    async getAllOffer(){
+        return await this.offerRepo.getAllOffer();
+    }
 }

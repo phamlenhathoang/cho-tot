@@ -77,5 +77,4 @@ export class CategoryService {
             throw error;
         }
     }
-
 }

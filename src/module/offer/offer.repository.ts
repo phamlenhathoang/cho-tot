@@ -108,4 +108,8 @@ export class OfferRepository {
             throw error;
         }
     }
+
+    async getAllOffer(){
+        return await this.prismaService.offer.findMany();
+    }
 }

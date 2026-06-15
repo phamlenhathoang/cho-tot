@@ -83,4 +83,8 @@ export class UserService {
     async updateHashedRefreshToken(userId: number, hashedRefreshToken: string | null) {
         return await this.userRepo.updateHashedRefreshToken(userId, hashedRefreshToken);
     }
+
+    async getAllUser(){
+        return await this.userRepo.getAllUser();
+    }
 }

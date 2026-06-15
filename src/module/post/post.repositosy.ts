@@ -81,7 +81,12 @@ export class PostRepository {
                 authorId: user.id,
                 categoryId: updatePostDto.categoryId ?? post.categoryId,
                 content: updatePostDto.content ?? post.content,
-                title: updatePostDto.title ?? post.title
+                title: updatePostDto.title ?? post.title,
+                price: updatePostDto.price ?? post.price,
+                width: updatePostDto.weight ?? post.width,
+                length: updatePostDto.length ?? post.length,
+                height: updatePostDto.height ?? post.height,
+                weight: updatePostDto.weight ?? post.weight,
             },
             where: {
                 id: post.id

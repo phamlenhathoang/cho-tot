@@ -63,4 +63,8 @@ export class UserController {
     return this.userService.GetUserBy(filterUser);
   }
 
+  @Get('get-all-user')
+  async getAllUser(){
+    return await this.userService.getAllUser();
+  }
 }
