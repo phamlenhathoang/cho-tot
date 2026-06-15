@@ -56,7 +56,7 @@ export class AuthController {
   @Get("google/callback")
   async googleCallback(@Req() rq, @Res() res){
     const response = await this.authService.login(rq.user.id);
-    res.redirect('https://www.youtube.com/watch?v=-pbT0uKRWX8&list=PLhnVDNT5zYN_PfPXedWpMy_UTeYNExbfR&index=20');
+    res.redirect('https://chotot-mall.vercel.app/');
   }
 
   @Public()
