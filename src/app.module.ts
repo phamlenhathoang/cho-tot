@@ -36,9 +36,9 @@ import { join } from 'path';
     TrackingModule,
     RedisModule,
 
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'module','chat','html'), // Đường dẫn tới thư mục chứa index.html
-    }),
+    // ServeStaticModule.forRoot({
+    //   rootPath: join(__dirname, '..', 'module','chat','html'), // Đường dẫn tới thư mục chứa index.html
+    // }),
   ],
   controllers: [AppController],
   providers: [AppService, TransactionService],

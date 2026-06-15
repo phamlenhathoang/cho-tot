@@ -18,10 +18,10 @@ import { UserService } from 'src/module/user/user.service';
 import { PostService } from 'src/module/post/post.service';
 import { JwtService } from '@nestjs/jwt';
 
-@UseGuards(WsJwtGuard)
-@WebSocketGateway({
-  cors: { origin: '*' },
-})
+// @UseGuards(WsJwtGuard)
+// @WebSocketGateway({
+//   cors: { origin: '*' },
+// })
 export class ChatGateway
   implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
