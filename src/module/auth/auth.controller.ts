@@ -47,21 +47,30 @@ export class AuthController {
   @Public()
   @UseGuards(GoogleAuthGuard)
   @Get("google/login")
-  async googleLogin() {
-
-  }
+  async googleLogin() { }
 
   @Public()
   @UseGuards(GoogleAuthGuard)
   @Get("google/callback")
   async googleCallback(@Req() rq, @Res() res) {
     const response = await this.authService.login(rq.user.id);
+
+    // Cookie cho HTTPOnly (backend dùng)
     res.cookie('accessToken', response.accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+      secure: process.env.NODE_ENV === 'production', // chỉ secure khi production
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 24 * 60 * 60 * 1000,
     });
+
+    // Cookie không HttpOnly để frontend đọc được
+    res.cookie('accessToken_frontend', response.accessToken, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
     res.redirect('http://localhost:5173/');
   }
 
