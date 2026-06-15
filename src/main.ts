@@ -50,10 +50,11 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'https://chotot-mall.vercel.app',
+      'http://localhost:5173'
     ],
     credentials: true,
   });
-  
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
