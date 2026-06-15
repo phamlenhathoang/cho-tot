@@ -19,6 +19,9 @@ export class TwilioConfig {
       auth: {
         user: this.configService.getOrThrow("MAIL_USER"),
         pass: this.configService.getOrThrow("MAIL_PASS"),
+        connectionTimeout: 30000,
+        greetingTimeout: 30000,
+        socketTimeout: 30000,
       },
     });
 
@@ -42,8 +45,7 @@ export class TwilioConfig {
 
       console.log('✅ SMTP connected successfully');
     } catch (error) {
-      console.error('❌ SMTP connection failed');
-      console.error(error);
+      console.error(JSON.stringify(error, null, 2));
     }
   }
 }
