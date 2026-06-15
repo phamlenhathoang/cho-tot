@@ -1,5 +1,6 @@
 import { UrlWithStringQuery } from "url"
 
 export type AuthJwtPayload={
-    sub:number
+    sub:number,
+    role: string
 }

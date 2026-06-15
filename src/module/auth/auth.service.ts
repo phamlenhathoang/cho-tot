@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { compare, hash } from 'bcrypt';
 import { AuthJwtPayload } from '../auth/types/auth-jwtPayload'
@@ -9,6 +9,7 @@ import * as argon2 from "argon2";
 import { CreateUserDTO } from '../user/dto/create.user.dto';
 import { CreateGoogleUserDTO } from '../user/dto/google.user.dto';
 import { ForgetPasswordDTO } from './dto/forget-password.dto';
+import { UserRepo } from '../user/user.repository';
 
 
 
@@ -57,7 +58,11 @@ export class AuthService {
     }
 
     async generateToken(userId: number) {
-        const payload: AuthJwtPayload = { sub: userId }
+        const user = await this.userService.getById(userId);
+        if(!user){
+            throw new NotFoundException("User doest not exist");
+        }
+        const payload: AuthJwtPayload = { sub: userId, role: user.role}
         const [accessToken, refreshToken] = await Promise.all([
             this.jwtService.signAsync(payload),
             this.jwtService.signAsync(payload, this.refreshJwtConfig)
