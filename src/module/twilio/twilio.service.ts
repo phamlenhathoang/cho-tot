@@ -17,7 +17,10 @@ export class TwilioService {
 
     async sendVoiceOtp(phone: string, type: string) {
         try {
-            const user = await this.userRepo.getUserByPhone(phone);
+            const phone = "+84395760997";
+
+            const result = phone.replace("+84", "0");
+            const user = await this.userRepo.getUserByPhone(result);
             if (!user) {
                 throw new NotFoundException("User does not exist");
             }

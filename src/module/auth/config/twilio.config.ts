@@ -46,7 +46,7 @@ export class TwilioConfig {
 
       console.log('✅ SMTP connected successfully');
     } catch (error) {
-  console.error('SMTP ERROR:', error);
-}
+      console.error('SMTP ERROR:', error);
+    }
   }
 }
