@@ -47,9 +47,13 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: '*',
+    origin: [
+      'http://localhost:3000',
+      'https://chotot-mall.vercel.app',
+    ],
+    credentials: true,
   });
-
+  
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

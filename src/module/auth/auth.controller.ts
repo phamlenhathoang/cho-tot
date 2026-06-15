@@ -14,7 +14,7 @@ import { ForgetPasswordDTO } from './dto/forget-password.dto';
 export class AuthController {
   constructor(
     private readonly authService: AuthService
-    
+
   ) { }
 
   @HttpCode(HttpStatus.OK)
@@ -34,34 +34,40 @@ export class AuthController {
 
   @UseGuards(RefreshAuthGuard)
   @Post('refresh-token')
-  async refreshToken(@Req() rq){
+  async refreshToken(@Req() rq) {
     return this.authService.refreshToken(rq.user.id)
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('signout')
-  async signOut(@Req() rq){
+  async signOut(@Req() rq) {
     return this.authService.signOut(rq.user.id);
   }
 
   @Public()
   @UseGuards(GoogleAuthGuard)
   @Get("google/login")
-  async googleLogin(){
-    
+  async googleLogin() {
+
   }
 
   @Public()
   @UseGuards(GoogleAuthGuard)
   @Get("google/callback")
-  async googleCallback(@Req() rq, @Res() res){
+  async googleCallback(@Req() rq, @Res() res) {
     const response = await this.authService.login(rq.user.id);
+    res.cookie('accessToken', response.accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      maxAge: 24 * 60 * 60 * 1000,
+    });
     res.redirect('https://chotot-mall.vercel.app/');
   }
 
   @Public()
   @Post('forget-password')
-  async forgetPassword(@Body() forgetPassword: ForgetPasswordDTO){
+  async forgetPassword(@Body() forgetPassword: ForgetPasswordDTO) {
 
   }
 }
