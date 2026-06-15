@@ -34,6 +34,11 @@ export class TwilioConfig {
   }
 
   async getTransporterlog(){
+    console.log('MAIL_USER:', this.configService.get('MAIL_USER'));
+    console.log('MAIL_PASS exists:', !!this.configService.get('MAIL_PASS'));
+
     await this.transporter.verify();
+
+    console.log('✅ SMTP connected successfully');
   }
 }
