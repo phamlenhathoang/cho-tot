@@ -15,14 +15,15 @@ export class TwilioConfig {
     );
 
     this.transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
       auth: {
-        user: this.configService.getOrThrow("MAIL_USER"),
-        pass: this.configService.getOrThrow("MAIL_PASS"),
-        connectionTimeout: 30000,
-        greetingTimeout: 30000,
-        socketTimeout: 30000,
+        user: this.configService.getOrThrow('MAIL_USER'),
+        pass: this.configService.getOrThrow('MAIL_PASS'),
       },
+      logger: true,
+      debug: true,
     });
 
 
@@ -45,7 +46,7 @@ export class TwilioConfig {
 
       console.log('✅ SMTP connected successfully');
     } catch (error) {
-      console.error(JSON.stringify(error, null, 2));
-    }
+  console.error('SMTP ERROR:', error);
+}
   }
 }
