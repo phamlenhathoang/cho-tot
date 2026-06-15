@@ -118,4 +118,12 @@ export class UserRepo {
     async getAllUser(){
         return await this.prismaService.user.findMany();
     }
+
+    async getUserById(id: number){
+        return await this.prismaService.user.findUnique({
+            where:{
+                id: id
+            }
+        });
+    }
 }

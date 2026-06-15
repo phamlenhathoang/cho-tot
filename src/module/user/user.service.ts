@@ -87,4 +87,8 @@ export class UserService {
     async getAllUser(){
         return await this.userRepo.getAllUser();
     }
+
+    async getUserById(id: number){
+        return await this.userRepo.getUserById(id);
+    }
 }

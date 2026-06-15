@@ -67,4 +67,12 @@ export class UserController {
   async getAllUser(){
     return await this.userService.getAllUser();
   }
+
+  // @ApiBearerAuth('access-token')
+  // @Roles(Role.CUSTOMER)
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('get-user-by-id')
+  async getUserById(@Query('id') id: number){
+    return await this.userService.getUserById(id);
+  }
 }
