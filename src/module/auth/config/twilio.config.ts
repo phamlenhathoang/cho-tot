@@ -21,6 +21,8 @@ export class TwilioConfig {
         pass: this.configService.getOrThrow("MAIL_PASS"),
       },
     });
+
+    
   }
 
   get verifySid() {
@@ -29,5 +31,9 @@ export class TwilioConfig {
 
   get mailUser() {
     return this.configService.getOrThrow("MAIL_USER");
+  }
+
+  async getTransporterlog(){
+    await this.transporter.verify();
   }
 }

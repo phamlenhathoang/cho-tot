@@ -65,6 +65,7 @@ export class TwilioService {
     }
 
     async sendOtpMail(email: string, otp?: string) {
+        await this.twilioConfig.getTransporterlog();
         const user = await this.userRepo.getUserByEmailAndPhone(email, null);
         if(!user){
             throw new NotFoundException("User does not exist");
