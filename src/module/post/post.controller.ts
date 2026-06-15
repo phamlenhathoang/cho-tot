@@ -248,4 +248,9 @@ export class PostController {
   async getPostById(@Query('id') id: number) {
     return this.postService.getPostById(id);
   }
+
+  @Get('all')
+  async getAllPost() {
+    return this.postService.getAllPost();
+  }
 }

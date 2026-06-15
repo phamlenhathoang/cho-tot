@@ -149,4 +149,12 @@ export class PostRepository {
             })
         }))
     }
+
+    async getAllPost(){
+        return await this.prismaService.post.findMany({
+            orderBy: {
+                createdAt: 'desc'
+            }
+        })
+    }
 }
