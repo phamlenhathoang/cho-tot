@@ -37,7 +37,7 @@ import { join } from 'path';
     RedisModule,
 
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'), // Đường dẫn tới thư mục chứa index.html
+      rootPath: join(__dirname, '..', 'module','chat','html'), // Đường dẫn tới thư mục chứa index.html
     }),
   ],
   controllers: [AppController],
