@@ -162,4 +162,12 @@ export class PostRepository {
             }
         })
     }
+
+    async getAllPostByUserId(userId: number){
+        return await this.prismaService.post.findMany({
+            where:{
+                authorId: userId
+            }
+        })
+    }
 }

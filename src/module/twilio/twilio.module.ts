@@ -4,10 +4,11 @@ import { TwilioController } from './twilio.controller';
 import { TwilioConfig } from '../auth/config/twilio.config';
 import { RedisModule } from '../redis/redis.module';
 import { UserModule } from '../user/user.module';
+import { ResendConfig } from '../auth/config/resend-config';
 
 @Module({
   imports:[RedisModule, UserModule],
   controllers: [TwilioController],
-  providers: [TwilioService, TwilioConfig],
+  providers: [TwilioService, TwilioConfig, ResendConfig],
 })
 export class TwilioModule {}

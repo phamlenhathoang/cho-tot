@@ -199,7 +199,7 @@ export class PostController {
   @ApiBearerAuth('access-token')
   @Roles(Role.CUSTOMER)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Get('get-all-posts-by-userid')
+  @Get('get-all-posts-of-userid')
   async getAllPostsByUserId(@Req() rq, @Query('isPublic') isPublic: number) {
     let check: boolean | null = null;
     if (isPublic == 1) {
@@ -252,5 +252,13 @@ export class PostController {
   @Get('all')
   async getAllPost() {
     return this.postService.getAllPost();
+  }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CUSTOMER)
+  @Get('get-all-post-by-user-id')
+  async getAllPostByUserId(@Query('id') userId: number) {
+    return this.postService.getAllPostByUserId(userId);
   }
 }

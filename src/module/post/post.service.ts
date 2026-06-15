@@ -142,4 +142,8 @@ export class PostService {
     async getAllPost(){
         return await this.postRepo.getAllPost()
     }
+
+    async getAllPostByUserId(userId: number){
+        return await this.postRepo.getAllPostByUserId(userId);
+    }
 }
