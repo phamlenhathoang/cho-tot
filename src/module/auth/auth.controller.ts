@@ -3,7 +3,7 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth/local-auth.guard';
 import { CreateUserDTO } from '../user/dto/create.user.dto';
 import { LoginDto } from './dto/login.dto';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { RefreshAuthGuard } from './guards/refresh-auth/refresh-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guards/jwt-auth.guards.guard';
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
@@ -61,6 +61,14 @@ export class AuthController {
       maxAge: 24 * 60 * 60 * 1000,
     });
     res.redirect(`http://localhost:5173`);
+  }
+
+  
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard)
+  @Get("me")
+  async getMe(@Req() req) {
+    return req.user;
   }
 
   @Public()
