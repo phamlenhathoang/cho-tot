@@ -54,13 +54,13 @@ export class AuthController {
   @Get("google/callback")
   async googleCallback(@Req() rq, @Res() res) {
     const response = await this.authService.login(rq.user.id);
-    // res.cookie('accessToken', response.accessToken, {
-    //   httpOnly: true,
-    //   secure: true,
-    //   sameSite: 'none',
-    //   maxAge: 24 * 60 * 60 * 1000,
-    // });
-    res.redirect(`https://cho-tot-production.up.railway.app/?accessToken=${response.accessToken}`);
+    res.cookie('accessToken', response.accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    res.redirect(`http://localhost:5173`);
   }
 
   @Public()

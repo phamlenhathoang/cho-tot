@@ -39,8 +39,9 @@ async function bootstrap() {
     )
 
     .build();
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  const document  = () => SwaggerModule.createDocument(app, config);
+
+  SwaggerModule.setup('api', app, document );
 
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',

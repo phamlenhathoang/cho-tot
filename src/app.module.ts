@@ -20,6 +20,7 @@ import { TrackingModule } from './module/tracking/tracking.module';
 import { RedisModule } from './module/redis/redis.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { AiModule } from './module/ai/ai.module';
 
 @Module({
   imports: [UserModule, AuthModule, CategotyModule, ThumpnailModule, PostModule, ChatModule,
@@ -35,6 +36,7 @@ import { join } from 'path';
     AddressModule,
     TrackingModule,
     RedisModule,
+    AiModule,
 
     // ServeStaticModule.forRoot({
     //   rootPath: join(__dirname, '..', 'module','chat','html'), // Đường dẫn tới thư mục chứa index.html
