@@ -188,4 +188,67 @@ ${apiContext}
             }
         }
     }
+
+    async chatAI(chat: string) {
+        const key = crypto.createHash('md5').update(chat).digest('hex');
+
+        const cached = await this.redisService.get(key);
+
+        if (cached) {
+            return {
+                source: 'cache',
+                data: JSON.parse(cached)
+            }
+        } else {
+            let content
+            try {
+                const response = await this.openAI.chat.completions.create({
+                    model: 'gemini-3.5-flash',
+                    messages: [
+                        {
+                            role: 'system',
+                            content: `
+                                Bạn là AI Assistant của tôi.
+
+                                Bạn có thể:
+                                - Trả lời câu hỏi của người dùng.
+                                - Giải thích chi tiết thắc mắc người dùng
+                                - Phân tích từng bước và cách khắc phục
+                                - Đưa ra ví dụ minh họa khi cần thiết
+                                - Trình bày dưới dạng đoạn văn tự nhiên, dễ đọc.
+                                - Chỉ sử dụng danh sách hoặc bảng khi thực sự cần thiết.
+                                - Hạn chế sử dụng markdown như **, #, ---, |.
+                                - Không sử dụng ký tự trang trí dư thừa.
+                                - Khi giải thích hãy viết thành các đoạn văn mạch lạc.
+                                - Có thể xuống dòng giữa các ý lớn để dễ đọc
+                                
+                                Quy tắc:
+                                - Luôn trả lời bằng tiếng Việt.
+                                - Trả lời ngắn gọn và dễ hiểu.
+                                - Nếu không biết hoặc không có dữ liệu, hãy nói:
+                                "Xin lỗi, tôi chưa có thông tin về vấn đề này."
+                                - Không được bịa ra thông tin. 
+                                `,
+                        },
+                        {
+                            role: 'user',
+                            content: chat,
+                        },
+                    ],
+                });
+
+                content = response.choices[0]?.message?.content?.trim()?.replace(/\n+/g, ' ')
+                                                                ?.trim();
+
+            } catch (error) {
+                throw new Error("AI cannot reply")
+            }
+
+            await this.redisService.set(key, JSON.stringify(content), 3600);
+
+            return {
+                data: content,
+            };
+        }
+    }
 }

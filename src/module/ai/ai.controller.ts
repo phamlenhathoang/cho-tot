@@ -22,4 +22,9 @@ export class AiController {
   async createImage(@Query('prompt')prompt: string){
     return await this.aiService.createImage(prompt);
   }
+
+  @Post('chat-AI')
+  async chatAI(@Query('chat')chat: string){
+    return await this.aiService.chatAI(chat);
+  }
 }

@@ -14,7 +14,7 @@ export class UpdateOrderDTO {
     orderId !: number;
 
     @ApiProperty({
-        example: 'ACCEPTED',
+        example: 'CANCELED, PENDING, ACCEPTED, COMPLETED',
         description: 'Order status'
     })
     @IsEnum(OrderStatus)
