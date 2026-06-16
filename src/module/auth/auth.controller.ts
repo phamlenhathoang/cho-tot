@@ -54,7 +54,7 @@ export class AuthController {
   @Get("google/callback")
   async googleCallback(@Req() rq, @Res() res) {
     const response = await this.authService.login(rq.user.id);
-    res.redirect(`http://localhost:5173/?accessToken=${response.accessToken}`);
+    res.redirect(`https://cho-tot-production.up.railway.app/?accessToken=${response.accessToken}`);
   }
 
   
