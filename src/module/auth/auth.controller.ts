@@ -54,7 +54,13 @@ export class AuthController {
   @Get("google/callback")
   async googleCallback(@Req() rq, @Res() res) {
     const response = await this.authService.login(rq.user.id);
-    res.redirect(`https://chotot-mall.vercel.app/?accessToken=${response.accessToken}`);
+    res.cookie('accessToken', response.accessToken, {
+      httpOnly: false,
+      secure: true,
+      sameSite: 'none',
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    res.redirect(`https://chotot-mall.vercel.app`);
   }
 
   
