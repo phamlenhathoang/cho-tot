@@ -46,4 +46,8 @@ export class AddressService {
             throw error;
         }
     }
+
+    async getAddressByUserId(userId: number){
+        return await this.addressRepository.getAddressByUserId(userId)
+    }
 }

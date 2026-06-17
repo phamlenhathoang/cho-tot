@@ -51,8 +51,8 @@ export class OfferService {
         }
     }
 
-    async getOffersByPostId(postId: number|undefined, user: any){
-        return await this.offerRepo.getOffersByPostId(postId, user.id);
+    async getOffersByPostId(postId: number|undefined){
+        return await this.offerRepo.getOffersByPostId(postId);
     }
 
     async getAllOffersByUser(userId: number){

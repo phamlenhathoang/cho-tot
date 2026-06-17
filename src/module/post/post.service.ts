@@ -11,6 +11,7 @@ import { UserRepo } from '../user/user.repository';
 import { CategoryRepository } from '../categoty/category.repository';
 import { ThumbnaiRepo } from '../thumpnail/thumbnail.repository';
 import { RedisService } from '../redis/redis.service';
+import { CloudnaryService } from '../cloudnary/cloudnary.service';
 
 @Injectable()
 export class PostService {
@@ -20,11 +21,13 @@ export class PostService {
         private readonly categoryRepo: CategoryRepository,
         private readonly thumbnaiRepo: ThumbnaiRepo,
         private readonly postRepo: PostRepository,
-        private readonly redis : RedisService
+        private readonly redis : RedisService,
+        private readonly cloudinaryService: CloudnaryService
     ) { }
 
-    async createPost(createPostDto: PostDto, urls: string[], user: any) {
+    async createPost(createPostDto: PostDto, files: Express.Multer.File[], user: any) {
         try {
+            const urls = await this.cloudinaryService.uploadImages(files);
 
             const category = await this.categoryRepo.getCategoryById(createPostDto.categoryId);
             if (!category) {
@@ -36,7 +39,7 @@ export class PostService {
                     const addPost = await this.postRepo.createPost(tx, createPostDto, user);
 
                     if (urls !== undefined) {
-                        await this.thumbnaiRepo.saveImages(tx, urls, addPost.id)
+                        // await this.thumbnaiRepo.saveImages(tx, urls, addPost.id)
                     }
                     return addPost;
                 },

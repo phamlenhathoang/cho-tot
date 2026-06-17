@@ -21,6 +21,8 @@ import { RedisModule } from './module/redis/redis.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AiModule } from './module/ai/ai.module';
+import { FirebaseModule } from './module/firebase/firebase.module';
+import { CloudnaryModule } from './module/cloudnary/cloudnary.module';
 
 @Module({
   imports: [UserModule, AuthModule, CategotyModule, ThumpnailModule, PostModule, ChatModule,
@@ -37,6 +39,8 @@ import { AiModule } from './module/ai/ai.module';
     TrackingModule,
     RedisModule,
     AiModule,
+    FirebaseModule,
+    CloudnaryModule,
 
     // ServeStaticModule.forRoot({
     //   rootPath: join(__dirname, '..', 'module','chat','html'), // Đường dẫn tới thư mục chứa index.html

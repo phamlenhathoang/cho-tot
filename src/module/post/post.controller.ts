@@ -85,17 +85,17 @@ export class PostController {
     @Body() postDto: PostDto,
   ) {
     
-    let imageUrls;
-    if (files && files.length > 0) {
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
+    // let imageUrls;
+    // if (files && files.length > 0) {
+    //   const baseUrl = `${req.protocol}://${req.get('host')}`;
 
-      imageUrls = files.map(file => {
-        return `${baseUrl}/uploads/${file.filename}`;
-      });
-    }
+    //   imageUrls = files.map(file => {
+    //     return `${baseUrl}/uploads/${file.filename}`;
+    //   });
+    // }
     return await this.postService.createPost(
       postDto,
-      imageUrls,
+      files,
       req.user
     );
   }

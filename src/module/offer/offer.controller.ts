@@ -37,8 +37,8 @@ export class OfferController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.CUSTOMER)
   @Get('get-offer-by-post-id')
-  async getOffersByPostId(@Req() rq, @Query('postId') postId?: string) {
-    return await this.offerService.getOffersByPostId(postId ? Number(postId) : undefined, rq.user)
+  async getOffersByPostId(@Query('postId') postId?: string) {
+    return await this.offerService.getOffersByPostId(postId ? Number(postId) : undefined)
   }
 
   @ApiBearerAuth('access-token')

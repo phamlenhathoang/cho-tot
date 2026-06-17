@@ -79,17 +79,16 @@ export class OfferRepository {
         })
     }
 
-    async getOffersByPostId(postId: number|undefined, userId: number) {
-        console.log(postId, userId)
+    async getOffersByPostId(postId: number|undefined) {
         return await this.prismaService.offer.findMany({
             where: {
                 ...(postId ? {postId} : {}),
-                OR: [
-                    {post: 
-                        {authorId: userId}
-                    },
-                    {buyerId: userId}
-                ]
+                // OR: [
+                //     {post: 
+                //         {authorId: userId}
+                //     },
+                //     {buyerId: userId}
+                // ]
             },
             include: {
                 post: true,

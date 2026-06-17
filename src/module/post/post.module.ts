@@ -7,13 +7,15 @@ import { CategotyModule } from '../categoty/category.module';
 import { ThumpnailModule } from '../thumpnail/thumpnail.module';
 import { PostRepository } from './post.repositosy';
 import { RedisModule } from '../redis/redis.module';
+import { CloudnaryModule } from '../cloudnary/cloudnary.module';
 
 @Module({
   imports:[PrismaModule,
     forwardRef(() => CategotyModule),
     forwardRef(() => ThumpnailModule),
     forwardRef(() => UserModule),
-    RedisModule
+    RedisModule,
+    CloudnaryModule
   ],
   controllers: [PostController],
   providers: [PostService, PostRepository],

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Query, Req, UseGuards, Get} from '@nestjs/common';
+import { Body, Controller, Post, Query, Req, UseGuards, Get, Put} from '@nestjs/common';
 import { OrderService } from './order.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guards/jwt-auth.guards.guard';
 import { RolesGuard } from '../auth/guards/roles/roles.guard';
@@ -14,7 +14,7 @@ export class OrderController {
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.CUSTOMER)
-  @Post('update-order')
+  @Put('update-order')
   async updateOrder(@Req() rq, @Body() order: UpdateOrderDTO){
     return await this.orderService.updateOrder(order, rq.user)
   }
