@@ -1,4 +1,4 @@
-import { Controller, Post, Put, Query, Req, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Post, Put, Query, Req, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { ThumpnailService } from './thumpnail.service';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from '../auth/config/multer.config';
@@ -14,6 +14,10 @@ export class ThumpnailController {
     schema: {
       type: 'object',
       properties: {
+        postId: {
+          type: 'number',
+          example: 1,
+        },
         files: {
           type: 'array',
           items: {
@@ -22,12 +26,14 @@ export class ThumpnailController {
           },
         },
       },
+      required: ['postId', 'files'],
     },
   })
   @UseInterceptors(FilesInterceptor('files', 10, multerConfig))
   async uploadMultipleImages(
     @UploadedFiles() files: Express.Multer.File[],
     @Req() req: any,
+    @Body('postId') postId: string, // ✅ FIX HERE
   ) {
     const baseUrl = `${req.protocol}://${req.get('host')}`;
 
@@ -35,7 +41,7 @@ export class ThumpnailController {
       return `${baseUrl}/uploads/${file.filename}`;
     });
 
-    // return await this.thumpnailService.saveImages(imageUrls);
+    return await this.thumpnailService.saveImages(Number(postId), imageUrls);
   }
 
 

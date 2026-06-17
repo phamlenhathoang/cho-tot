@@ -11,16 +11,9 @@ export class ThumpnailService {
         private readonly thumbnailRepo: ThumbnaiRepo
     ) { }
 
-    // async updateImages(tx: Prisma.TransactionClient, updateImages: { imageId: number; url: string }[] = []) {
-    //     return tx.image.updateMany({
-    //         data: updateImages.map(img => 
-    //             tx.image.update({
-    //                 where: {id: img.imageId},
-    //                 data: {url: img.url}
-    //             })
-    //     )
-    //     });
-    // }
+    async saveImages(postId: number, addImages: any) {
+        return await this.thumbnailRepo.addImages(addImages, postId);
+    }
 
     async update(imageId: number, url: string){
         try {

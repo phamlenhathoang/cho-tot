@@ -36,4 +36,13 @@ export class ThumbnaiRepo {
             })),
         });
     }
+
+    async addImages(urls: any, postId: number) {
+        return await this.prismaService.image.createMany({
+            data: urls.map((url) => ({
+                url,
+                postId: postId
+            })),
+        });
+    }
 }
