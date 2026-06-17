@@ -1,16 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { GHNConfig } from '../auth/config/ghn.config';
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { GetShipFeeDTO } from './dto/get-ship-fee.dto';
 import { CreateGHNOrderDTO } from './dto/create-ghn-order.dto';
 import { TrackingService } from '../tracking/tracking.service';
+import { AddressRepository } from '../address/address.repository';
 
 @Injectable()
 export class GhnService {
     constructor(
         private readonly ghnConfig: GHNConfig,
-        private readonly httpService: HttpService
+        private readonly httpService: HttpService,
+        private readonly addressRepository: AddressRepository
     ) { }
 
     private get headers() {
@@ -98,13 +100,21 @@ export class GhnService {
     }
 
     async canShip(
-        fromDistrictId: number,
-        toDistrictId: number,
+        addressSellerId: number,
+        addressBuyerId: number,
     ) {
-        console.log(fromDistrictId + "  " + toDistrictId)
+        
+        const addressSeller = await this.addressRepository.getAddressById(addressSellerId);
+        const addressBuyer = await this.addressRepository.getAddressById(addressBuyerId);
+    
+        console.log(addressBuyer?.districtId + "  " + addressSeller?.districtId)
+        if(!addressSeller || !addressSeller.districtId || !addressBuyer || !addressBuyer.districtId){
+            throw new NotFoundException("User or districtId user does not exist");
+        }
+
         const services = await this.getAvailableServices(
-            fromDistrictId,
-            toDistrictId,
+            addressSeller.districtId!,
+            addressBuyer.districtId!,
         );
 
         return {

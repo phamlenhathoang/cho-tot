@@ -36,4 +36,12 @@ export class AddressRepository{
             }
         })
     }
+
+    async getAddressById(addressId: number){
+        return await this.prismaService.address.findUnique({
+            where:{
+                id: addressId
+            }
+        })
+    }
 }
