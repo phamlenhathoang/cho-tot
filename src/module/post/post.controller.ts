@@ -10,6 +10,7 @@ import { Role } from '../auth/enums/role.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guards/jwt-auth.guards.guard';
 import { RolesGuard } from '../auth/guards/roles/roles.guard';
 import { PaginationDTO } from 'src/common/pagination';
+import { memoryStorage } from 'multer';
 
 
 @Controller('post')
@@ -78,7 +79,7 @@ export class PostController {
     ],
   },
 })
-  @UseInterceptors(FilesInterceptor('files', 10, multerConfig))
+  @UseInterceptors(FilesInterceptor('files', 10, {storage: memoryStorage()}))
   async createPost(
     @UploadedFiles() files: Express.Multer.File[],
     @Req() req: any,

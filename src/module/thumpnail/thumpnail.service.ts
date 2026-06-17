@@ -1,28 +1,32 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { Prisma } from '@prisma/client';
 import { ThumbnaiRepo } from './thumbnail.repository';
+import { CloudnaryService } from '../cloudnary/cloudnary.service';
 
 @Injectable()
 export class ThumpnailService {
 
     constructor(
-        private readonly prismaService: PrismaService,
-        private readonly thumbnailRepo: ThumbnaiRepo
+        private readonly thumbnailRepo: ThumbnaiRepo,
+        private readonly cloudinaryService: CloudnaryService
     ) { }
 
-    async saveImages(postId: number, addImages: any) {
-        return await this.thumbnailRepo.addImages(addImages, postId);
+    async saveImages(postId: number, files: any) {
+        const result = await this.cloudinaryService.uploadImages(files);
+        const urls: string[] = result.map(x => x.url);
+        return await this.thumbnailRepo.addImages(urls, postId);
     }
 
-    async update(imageId: number, url: string){
+    async update(imageId: number, file: any) {
         try {
             const image = await this.thumbnailRepo.getById(imageId);
-            if(!image){
+            
+            if (!image) {
                 throw new NotFoundException("Image does not exist");
             }
 
-            return this.thumbnailRepo.update(imageId, url);
+            const result = await this.cloudinaryService.uploadImage(file);
+            
+            return this.thumbnailRepo.update(imageId, result.url);
         } catch (error) {
             throw error;
         }

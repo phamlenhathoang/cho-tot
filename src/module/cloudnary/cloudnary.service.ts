@@ -14,24 +14,28 @@ export class CloudnaryService {
     }
 
     async uploadImage(file: Express.Multer.File) {
-        return new Promise((resolve, reject) => {
+        return new Promise<{
+            url: string;
+            publicId: string;
+        }>((resolve, reject) => {
             cloudinary.uploader
                 .upload_stream(
                     {
                         folder: 'chotot',
                     },
                     (error, result) => {
-                        if (error) return reject(error);
+                        if (error) {
+                            return reject(error);
+                        }
 
                         resolve({
-                            url: result?.secure_url,
-                            publicId: result?.public_id
-                        })
-                    }
+                            url: result!.secure_url,
+                            publicId: result!.public_id,
+                        });
+                    },
                 )
-
-                .end(file.buffer)
-        })
+                .end(file.buffer);
+        });
     }
 
     async uploadImages(files: Express.Multer.File[]) {
