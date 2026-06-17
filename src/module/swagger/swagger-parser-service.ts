@@ -4,7 +4,7 @@ import { parseRequestBody } from 'src/common/helper/parseRequestBody';
 @Injectable()
 export class SwaggerParserService {
     async getApiContext() {
-        const res = await fetch('http://localhost:3000/api-json'); //Truy cập vào đường link này 
+        const res = await fetch('https://cho-tot-production.up.railway.app/api-json'); //Truy cập vào đường link này 
         const swagger = await res.json(); //Lấy file json trong đường link đó ra
 
         const paths = swagger.paths;//Lấy hết danh sách api trong swagger
