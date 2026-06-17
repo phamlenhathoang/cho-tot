@@ -190,9 +190,12 @@ export class PostController {
     return this.postService.updatePost(id, updatePostDto, rq.user);
   }
 
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CUSTOMER)
   @Delete('delete')
-  async deletePost(@Query('id') id: number) {
-    return this.postService.deletePost(id);
+  async deletePost(@Query('id') id: number, @Req() req) {
+    return this.postService.deletePost(id, req.user.id);
   }
 
 

@@ -151,7 +151,7 @@ ${apiContext}
         } else {
 
             const response = await this.client.models.generateContent({
-                model: 'gemini-3.5-flash',
+                model: 'gemini-2.5-flash',
                 contents: query,
                 config: {
                     tools: [{ googleSearch: {} }],
@@ -166,9 +166,16 @@ ${apiContext}
     }
 
     async createImage(prompt: string) {
+        const models = await this.client.models.list();
+        console.log(models)
+
+
         const response = await this.client.models.generateContent({
-            model: "gemini-3.1-flash-lite-image",
+            model: "gemini-2.5-flash-image",
             contents: prompt,
+            config: {
+                responseModalities: ["TEXT", "IMAGE"],
+            }
         });
 
         const candidate = response.candidates?.[0];
@@ -185,6 +192,11 @@ ${apiContext}
                 const buffer = Buffer.from(imageData!, "base64");
                 fs.writeFileSync("gemini-native-image.png", buffer);
                 console.log("Image saved as gemini-native-image.png");
+
+                return {
+                    mimeType: part.inlineData!.mimeType,
+                    base64: imageData,
+                };
             }
         }
     }
@@ -238,7 +250,7 @@ ${apiContext}
                 });
 
                 content = response.choices[0]?.message?.content?.trim()?.replace(/\n+/g, ' ')
-                                                                ?.trim();
+                    ?.trim();
 
             } catch (error) {
                 throw new Error("AI cannot reply")

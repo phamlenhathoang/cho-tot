@@ -6,12 +6,14 @@ import { UserModule } from '../user/user.module';
 import { CategotyModule } from '../categoty/category.module';
 import { ThumpnailModule } from '../thumpnail/thumpnail.module';
 import { PostRepository } from './post.repositosy';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
   imports:[PrismaModule,
     forwardRef(() => CategotyModule),
     forwardRef(() => ThumpnailModule),
-    forwardRef(() => UserModule)
+    forwardRef(() => UserModule),
+    RedisModule
   ],
   controllers: [PostController],
   providers: [PostService, PostRepository],

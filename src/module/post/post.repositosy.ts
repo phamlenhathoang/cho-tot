@@ -167,6 +167,9 @@ export class PostRepository {
         return await this.prismaService.post.findMany({
             where:{
                 authorId: userId
+            },
+            include: {
+                images: true
             }
         })
     }

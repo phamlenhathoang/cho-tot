@@ -10,6 +10,7 @@ import sanitizeHtml from 'sanitize-html'
 import { UserRepo } from '../user/user.repository';
 import { CategoryRepository } from '../categoty/category.repository';
 import { ThumbnaiRepo } from '../thumpnail/thumbnail.repository';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class PostService {
@@ -18,7 +19,8 @@ export class PostService {
         private readonly userRepo: UserRepo,
         private readonly categoryRepo: CategoryRepository,
         private readonly thumbnaiRepo: ThumbnaiRepo,
-        private readonly postRepo: PostRepository
+        private readonly postRepo: PostRepository,
+        private readonly redis : RedisService
     ) { }
 
     async createPost(createPostDto: PostDto, urls: string[], user: any) {
@@ -29,7 +31,7 @@ export class PostService {
                 throw new NotFoundException("Category does not exist");
             }
 
-            return await this.prismaService.$transaction(
+            const post = await this.prismaService.$transaction(
                 async (tx) => {
                     const addPost = await this.postRepo.createPost(tx, createPostDto, user);
 
@@ -39,6 +41,10 @@ export class PostService {
                     return addPost;
                 },
             );
+
+            await this.redis.delete('getAllPost');
+
+            return post;
         } catch (error) {
             throw error;
         }
@@ -97,9 +103,9 @@ export class PostService {
 
     async updatePost(postId: number, updatePostDto: UpdatePostDto, user: any) {
         try {
-            const post = await this.postRepo.getPostById(postId);
+            const postExist = await this.postRepo.getPostById(postId);
 
-            if (!post) {
+            if (!postExist) {
                 throw new NotFoundException("Post does not exist or User are not alowed to update this post");
             }
 
@@ -109,19 +115,25 @@ export class PostService {
                     throw new NotFoundException("Category does not exist");
                 }
             }
-            return this.postRepo.updatePost(updatePostDto, post, user)
+            const post = this.postRepo.updatePost(updatePostDto, postExist, user)
+
+            await this.redis.delete('getAllPost');
+
+            return post
         } catch (error) {
             throw error;
         }
     }
 
-    async deletePost(postId: number) {
+    async deletePost(postId: number, userId: number) {
         try {
-            const post = await this.postRepo.getPostById(postId);
-            if(!post){
+            const postExist = await this.postRepo.getPostByIdAndUserId(postId, userId);
+            if(!postExist){
                 throw new NotFoundException("Post does not exist");
             }
-            return await this.postRepo.deletePost(postId)
+            const post = await this.postRepo.deletePost(postId)
+            await this.redis.delete('getAllPost');
+            return post;
         } catch (error) {
             throw error
         }
@@ -140,7 +152,17 @@ export class PostService {
     }
 
     async getAllPost(){
-        return await this.postRepo.getAllPost()
+        const key = `getAllPost`;
+        const cache = await this.redis.get(key);
+        if(cache){
+            return JSON.parse(cache)
+        }
+        const posts =  await this.postRepo.getAllPost();
+        if(!posts){
+            return
+        }
+        await this.redis.set(key, JSON.stringify(posts), 300);
+        return posts;
     }
 
     async getAllPostByUserId(userId: number){
