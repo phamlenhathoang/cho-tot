@@ -21,7 +21,6 @@ import { RedisModule } from './module/redis/redis.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AiModule } from './module/ai/ai.module';
-import { FirebaseModule } from './module/firebase/firebase.module';
 import { CloudnaryModule } from './module/cloudnary/cloudnary.module';
 
 @Module({
@@ -39,7 +38,6 @@ import { CloudnaryModule } from './module/cloudnary/cloudnary.module';
     TrackingModule,
     RedisModule,
     AiModule,
-    FirebaseModule,
     CloudnaryModule,
 
     // ServeStaticModule.forRoot({
