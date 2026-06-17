@@ -34,27 +34,33 @@ export class CloudnaryService {
         })
     }
 
-    async uploadImages(file: Express.Multer.File[]){
-        const uploadPromies = file.map(file =>
-            new Promise((resolve, reject) =>{
-                cloudinary.uploader
-                    .upload_stream(
-                        {
-                            folder: 'chotot'
-                        },
-                        (error, result) => {
-                            if(error) return reject(error);
+    async uploadImages(files: Express.Multer.File[]) {
+        const uploadPromises = files.map(
+            (file) =>
+                new Promise<{
+                    url: string;
+                    publicId: string;
+                }>((resolve, reject) => {
+                    cloudinary.uploader
+                        .upload_stream(
+                            {
+                                folder: 'chotot',
+                            },
+                            (error, result) => {
+                                if (error) {
+                                    return reject(error);
+                                }
 
-                            resolve({
-                            url: result?.secure_url,
-                            publicId: result?.public_id
-                        })
-                        }
-                    )
-                .end(file.buffer)
-            })
-        )
+                                resolve({
+                                    url: result!.secure_url,
+                                    publicId: result!.public_id,
+                                });
+                            },
+                        )
+                        .end(file.buffer);
+                }),
+        );
 
-        return Promise.all(uploadPromies);
+        return Promise.all(uploadPromises);
     }
 }

@@ -27,7 +27,8 @@ export class PostService {
 
     async createPost(createPostDto: PostDto, files: Express.Multer.File[], user: any) {
         try {
-            const urls = await this.cloudinaryService.uploadImages(files);
+            const result = await this.cloudinaryService.uploadImages(files);
+            const urls: string [] = result.map(x => x.url);
 
             const category = await this.categoryRepo.getCategoryById(createPostDto.categoryId);
             if (!category) {
@@ -39,7 +40,7 @@ export class PostService {
                     const addPost = await this.postRepo.createPost(tx, createPostDto, user);
 
                     if (urls !== undefined) {
-                        // await this.thumbnaiRepo.saveImages(tx, urls, addPost.id)
+                        await this.thumbnaiRepo.saveImages(tx, urls, addPost.id)
                     }
                     return addPost;
                 },

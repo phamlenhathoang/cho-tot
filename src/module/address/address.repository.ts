@@ -29,13 +29,11 @@ export class AddressRepository{
     }
 
     async getAddressByUserId(userId: number){
-        const user = await this.prismaService.address.findFirst({
+        return await this.prismaService.address.findFirst({
             where:{
                 userId: userId,
                 isDefault: true
             }
         })
-
-        
     }
 }
