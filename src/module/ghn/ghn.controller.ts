@@ -27,12 +27,12 @@ export class GhnController {
 
   @Get('available-service')
   async getAvailableServices(
-    @Query('fromDistrict') fromDistrict: number,
-    @Query('toDistrict') toDistrict: number,
+    @Query('fromDistrictId') fromDistrictId: number,
+    @Query('toDistrictId') toDistrictId: number,
   ) {
     return this.ghnService.canShip(
-      Number(fromDistrict),
-      Number(toDistrict),
+      Number(fromDistrictId),
+      Number(toDistrictId),
     );
   }
 

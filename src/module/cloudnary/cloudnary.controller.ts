@@ -26,7 +26,7 @@ export class CloudnaryController {
     return this.cloudnaryService.uploadImage(file);
   }
 
-  @Post()
+  @Post('upload-images')
   @ApiOperation({ summary: 'Upload images to Cloudinary' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
