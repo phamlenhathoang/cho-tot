@@ -60,7 +60,7 @@ export class OrderService {
                     }
 
                     const codeId = await this.ghnService.createGHNOrder({
-                        content: order.post.category.name!,
+                        content: order.post.title!,
                         fromName: order.post.author.name!,
                         fromPhone: order.post.author.phone!,
                         fromAddress: order.post.author.addresss.find(a => a.isDefault === true)?.street!,
