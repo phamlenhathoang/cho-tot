@@ -58,7 +58,7 @@ export class AiService {
             }
 
             const response = await this.openAI.chat.completions.create({
-                model: 'gemini-3.5-flash',
+                model: 'gemini-2.5-flash',
                 messages: [
                     {
                         role: 'system',
