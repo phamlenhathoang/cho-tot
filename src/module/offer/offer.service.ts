@@ -32,15 +32,16 @@ export class OfferService {
             const addressBuyer = offer.buyer.addresss.find(x => x.isDefault == true);
 
             const services = await this.ghnService.canShip(addressSeller?.districtId!, addressBuyer?.districtId!);
-            console.log(services)
-            // let serviceId
-            // if (services) {
-            //     if (offer.post.height! >= 10 || offer.post.weight! >= 30000 || offer.post.length! >= 10 || offer.post.width! >= 10) {
-            //         serviceId = services.services.find(s => s.service_type_id === 5)?.service_id;
-            //     } else {
-            //         serviceId = services.services.find(s => s.service_type_id === 2)?.service_id
-            //     }
-            // }
+            let serviceId
+            if (services) {
+                if (offer.post.height! >= 10 || offer.post.weight! >= 30000 || offer.post.length! >= 10 || offer.post.width! >= 10) {
+                    serviceId = services.services.find(s => s.service_type_id === 5)?.service_id;
+                } else {
+                    serviceId = services.services.find(s => s.service_type_id === 2)?.service_id
+                }
+            }
+
+            console.log(serviceId)
 
             // const shipFee = await this.ghnService.getShipFee(
             //     {
