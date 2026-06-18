@@ -39,16 +39,13 @@ export class OrderRepository {
         })
     }
 
-    async updateOrder(orderId: number, serviceId: number, shipFee: number, codeId: string | null, price: number, orderStatus: OrderStatus, tx?: Prisma.TransactionClient) {
+    async updateOrder(orderId: number, codeId: string | null, orderStatus: OrderStatus, tx?: Prisma.TransactionClient) {
         const prisma = tx || this.prismaService;
         return await prisma.order.update({
             where: {
                 id: orderId
             }, data: {
-                serviceId: serviceId,
-                shipFee: shipFee,
                 codeId: codeId,
-                totalAmount: shipFee + price,
                 orderStatus: orderStatus
             }
         })

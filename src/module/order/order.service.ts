@@ -26,14 +26,18 @@ export class OrderService {
         private readonly offerRepo: OfferRepository
     ) { }
 
-    async createOrder(offer: any, tx: Prisma.TransactionClient) {
+    async createOrder(offer: any, tx: Prisma.TransactionClient, serviceId : number, totalShipFee : any) {
         try {
+            const price = Number(offer.price)
             const prisma = tx;
             return await prisma.order.create({
                 data: {
                     sellerId: offer.post.author.id,
                     buyerId: offer.buyerId,
                     postId: offer.postId,
+                    serviceId: serviceId,
+                    shipFee: totalShipFee,
+                    totalAmount: price + totalShipFee
                 }
             })
 
@@ -78,7 +82,7 @@ export class OrderService {
                         codAmount: Number(order.post.offers.find(o => o.postId === order.postId && o.buyerId === order.buyerId && o.offerStatus === OfferStatus.ACCEPTED)?.price!),
                         value: order.post.price!,
 
-                        serviceId: updateOrderDto.serviceId,
+                        serviceId: order.serviceId!,
                         orderId: order.id
                     })
 
@@ -92,7 +96,7 @@ export class OrderService {
                         statusOrderTracking: trackingData,
                     })
 
-                    return await this.orderRepo.updateOrder(order.id, updateOrderDto.serviceId, updateOrderDto.shipFee, codeId, Number(order.post.offers.find(o => o.postId === order.postId && o.buyerId === order.buyerId && o.offerStatus === OfferStatus.ACCEPTED)?.price!), updateOrderDto.orderStatus)
+                    return await this.orderRepo.updateOrder(order.id, codeId, updateOrderDto.orderStatus)
 
                     break;
                 
@@ -103,7 +107,7 @@ export class OrderService {
 
                     return await this.transactionService.execute(
                         async(tx) => {
-                            const updatedOrder = await this.orderRepo.updateOrder(order.id, 0, 0, null, Number(order.post.offers.find(o => o.postId === order.postId && o.buyerId === order.buyerId && o.offerStatus === OfferStatus.ACCEPTED)?.price!), updateOrderDto.orderStatus,tx);
+                            const updatedOrder = await this.orderRepo.updateOrder(order.id, updateOrderDto.orderStatus,tx);
                             await this.offerRepo.updateOffer(order.post.offers.find(o => o.buyerId === order.buyerId && o.postId === order.postId)?.id!, OfferStatus.CANCELED,tx);
                             return updatedOrder;
                         }

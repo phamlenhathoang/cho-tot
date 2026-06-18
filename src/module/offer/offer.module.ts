@@ -8,6 +8,7 @@ import { OfferRepository } from './offer.repository';
 import { TransactionService } from '../transaction/tracsaction.service';
 import { OrderModule } from '../order/order.module';
 import { PostModule } from '../post/post.module';
+import { GhnModule } from '../ghn/ghn.module';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { PostModule } from '../post/post.module';
       secret: process.env.JWT_SECRET,
     }),
     forwardRef(() => OrderModule),
-    PostModule
+    PostModule, GhnModule
   ],
   controllers: [OfferController],
   providers: [OfferService, OfferGateway, WsJwtGuard, OfferRepository, TransactionService],

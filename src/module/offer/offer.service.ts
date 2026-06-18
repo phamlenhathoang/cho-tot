@@ -4,6 +4,8 @@ import { TransactionService } from '../transaction/tracsaction.service';
 import { OrderService } from '../order/order.service';
 import { PostService } from '../post/post.service';
 import { OfferDTO } from './dto/offer.dto';
+import { GhnService } from '../ghn/ghn.service';
+import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class OfferService {
@@ -11,20 +13,55 @@ export class OfferService {
         private readonly offerRepo: OfferRepository,
         private readonly transactionService: TransactionService,
         private readonly orderService: OrderService,
-        private readonly postService: PostService
-    ){}
+        private readonly postService: PostService,
+        private readonly ghnService: GhnService
+    ) { }
 
-    async acceptOffer(offerId: number, user: any){
+    async acceptOffer(offerId: number, user: any) {
         try {
             const offer = await this.offerRepo.getOfferById(offerId, user.id);
-            if(!offer){
+            if (!offer) {
                 throw new NotFoundException("Offer does not exist");
             }
 
+            if (!offer.post || !offer.post.author || !offer.buyer.addresss || !offer.post.author.addresss) {
+                throw new NotFoundException("Post, author, buyer address or seller address does not exits");
+            }
+
+            const addressSeller = offer.post.author.addresss.find(x => x.isDefault == true);
+            const addressBuyer = offer.buyer.addresss.find(x => x.isDefault == true);
+
+            const services = await this.ghnService.canShip(addressSeller?.districtId!, addressBuyer?.districtId!);
+            let serviceId
+            if (services) {
+                if (offer.post.height! >= 10 || offer.post.weight! >= 30000 || offer.post.length! >= 10 || offer.post.width! >= 10) {
+                    serviceId = services.services.find(s => s.service_type_id === 5)?.service_id;
+                } else {
+                    serviceId = services.services.find(s => s.service_type_id === 2)?.service_id
+                }
+            }
+
+            const shipFee = await this.ghnService.getShipFee(
+                {
+                    districtBuyer: addressSeller?.districtId!,
+                    serviceId: serviceId,
+                    districtSeller: addressBuyer?.districtId!,
+                    value: Number(offer.price),
+                    width: offer.post.width!,
+                    weight: offer.post.weight!,
+                    height: offer.post.height!,
+                    length: offer.post.length!
+                }
+            )
+
+            console.log(shipFee)
+
+            const totalShipFee = shipFee.data.total;
+
             return await this.transactionService.execute(
-                async(tx) => {
+                async (tx) => {
                     const updateOffer = await this.offerRepo.acceptOffer(offerId, tx);
-                    await this.orderService.createOrder(offer,tx);
+                    await this.orderService.createOrder(offer, tx, serviceId, totalShipFee);
                     await this.offerRepo.rejectOffer(offer.postId, offerId, tx);
                     return updateOffer
                 }
@@ -34,11 +71,11 @@ export class OfferService {
         }
     }
 
-    async createOffer(offerdto: OfferDTO, user: any){
+    async createOffer(offerdto: OfferDTO, user: any) {
         try {
-            
+
             const post = await this.postService.getPostById(offerdto.postId);
-            if(!post){
+            if (!post) {
                 throw new NotFoundException("Post does not exist");
             }
             return await this.offerRepo.createOffer({
@@ -51,15 +88,15 @@ export class OfferService {
         }
     }
 
-    async getOffersByPostId(postId: number|undefined){
+    async getOffersByPostId(postId: number | undefined) {
         return await this.offerRepo.getOffersByPostId(postId);
     }
 
-    async getAllOffersByUser(userId: number){
+    async getAllOffersByUser(userId: number) {
         return await this.offerRepo.getAllOffersByUser(userId);
     }
 
-    async getAllOffer(){
+    async getAllOffer() {
         return await this.offerRepo.getAllOffer();
     }
 }

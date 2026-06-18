@@ -19,22 +19,4 @@ export class UpdateOrderDTO {
     })
     @IsEnum(OrderStatus)
     orderStatus !: OrderStatus;
-
-    @ApiProperty({
-        example: 30000,
-        description: 'Ship fee '
-    })
-    @IsOptional()
-    @Type(() => Number)
-    @IsNumber()
-    shipFee !: number;
-
-    @ApiProperty({
-        example: 4505,
-        description: 'Service Id'
-    })
-    @IsOptional()
-    @Type(() => Number)
-    @IsNumber()
-    serviceId !: number;
 }

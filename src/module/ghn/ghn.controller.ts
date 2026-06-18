@@ -30,6 +30,8 @@ export class GhnController {
     @Query('addressSellerId') addressSellerId: number,
     @Query('addressBuyerId') addressBuyerId: number,
   ) {
+
+    
     return this.ghnService.canShip(
       Number(addressSellerId),
       Number(addressBuyerId),

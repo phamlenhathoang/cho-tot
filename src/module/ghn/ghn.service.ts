@@ -100,21 +100,21 @@ export class GhnService {
     }
 
     async canShip(
-        addressSellerId: number,
-        addressBuyerId: number,
+        addressSellerDistrictId: number,
+        addressBuyerDistrictId: number,
     ) {
         
-        const addressSeller = await this.addressRepository.getAddressById(addressSellerId);
-        const addressBuyer = await this.addressRepository.getAddressById(addressBuyerId);
+        // const addressSeller = await this.addressRepository.getAddressById(addressSellerId);
+        // const addressBuyer = await this.addressRepository.getAddressById(addressBuyerId);
     
-        console.log(addressBuyer?.districtId + "  " + addressSeller?.districtId)
-        if(!addressSeller || !addressSeller.districtId || !addressBuyer || !addressBuyer.districtId){
-            throw new NotFoundException("User or districtId user does not exist");
-        }
+        // console.log(addressBuyer?.districtId + "  " + addressSeller?.districtId)
+        // if(!addressSeller || !addressSeller.districtId || !addressBuyer || !addressBuyer.districtId){
+        //     throw new NotFoundException("User or districtId user does not exist");
+        // }
 
         const services = await this.getAvailableServices(
-            addressSeller.districtId!,
-            addressBuyer.districtId!,
+            addressSellerDistrictId,
+            addressBuyerDistrictId,
         );
 
         return {
