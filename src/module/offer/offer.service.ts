@@ -32,42 +32,33 @@ export class OfferService {
             const addressBuyer = offer.buyer.addresss.find(x => x.isDefault == true);
 
             const services = await this.ghnService.canShip(addressSeller?.districtId!, addressBuyer?.districtId!);
-            let serviceId
-            if (services) {
-                if (offer.post.height! >= 10 || offer.post.weight! >= 30000 || offer.post.length! >= 10 || offer.post.width! >= 10) {
-                    serviceId = services.services.find(s => s.service_type_id === 5)?.service_id;
-                } else {
-                    serviceId = services.services.find(s => s.service_type_id === 2)?.service_id
+            const serviceId = services.services.find(s => s.service_type_id === 2)?.service_id
+
+            const shipFee = await this.ghnService.getShipFee(
+                {
+                    districtBuyer: addressSeller?.districtId!,
+                    serviceId: serviceId,
+                    districtSeller: addressBuyer?.districtId!,
+                    value: Number(offer.price),
+                    width: offer.post.width!,
+                    weight: offer.post.weight!,
+                    height: offer.post.height!,
+                    length: offer.post.length!
                 }
-            }
+            )
 
-            console.log(serviceId)
+            console.log(shipFee)
 
-            // const shipFee = await this.ghnService.getShipFee(
-            //     {
-            //         districtBuyer: addressSeller?.districtId!,
-            //         serviceId: serviceId,
-            //         districtSeller: addressBuyer?.districtId!,
-            //         value: Number(offer.price),
-            //         width: offer.post.width!,
-            //         weight: offer.post.weight!,
-            //         height: offer.post.height!,
-            //         length: offer.post.length!
-            //     }
-            // )
+            const totalShipFee = shipFee.data.total;
 
-            // console.log(shipFee)
-
-            // const totalShipFee = shipFee.data.total;
-
-            // return await this.transactionService.execute(
-            //     async (tx) => {
-            //         const updateOffer = await this.offerRepo.acceptOffer(offerId, tx);
-            //         await this.orderService.createOrder(offer, tx, serviceId, totalShipFee);
-            //         await this.offerRepo.rejectOffer(offer.postId, offerId, tx);
-            //         return updateOffer
-            //     }
-            // )
+            return await this.transactionService.execute(
+                async (tx) => {
+                    const updateOffer = await this.offerRepo.acceptOffer(offerId, tx);
+                    await this.orderService.createOrder(offer, tx, serviceId, totalShipFee);
+                    await this.offerRepo.rejectOffer(offer.postId, offerId, tx);
+                    return updateOffer
+                }
+            )
         } catch (error) {
             throw error;
         }
