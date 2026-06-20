@@ -59,8 +59,6 @@ export class OrderService {
                         throw new BadRequestException("Order must be pending status");
                     }
 
-                    console.log( order.serviceId!)
-
                     const codeId = await this.ghnService.createGHNOrder({
                         content: order.post.title!,
                         fromName: order.post.author.name!,
@@ -166,5 +164,9 @@ export class OrderService {
 
     async getOrderByPostId(postId: number, user: any) {
         return await this.orderRepo.getOrderByPostId(postId, user.id);
+    }
+
+    async getAll(){
+        return await this.orderRepo.getAll()
     }
 }

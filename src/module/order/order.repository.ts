@@ -97,4 +97,8 @@ export class OrderRepository {
             }
         })
     }
+
+    async getAll(){
+        return await this.prismaService.order.findMany()
+    }
 }

@@ -50,4 +50,12 @@ export class OrderController {
   async getOrderByPostId(@Req() rq, @Query('postId') postId: string){
     return await this.orderService.getOrderByPostId(Number(postId), rq.user)
   }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CUSTOMER, Role.ADMIN)
+  @Get()
+  async getAll(){
+    return await this.orderService.getAll()
+  }
 }
