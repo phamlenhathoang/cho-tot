@@ -11,6 +11,7 @@ import { GhnService } from '../ghn/ghn.service';
 import { TrackingService } from '../tracking/tracking.service';
 import { TransactionService } from '../transaction/tracsaction.service';
 import { OfferRepository } from '../offer/offer.repository';
+import { mapGhnStatusToEnum } from 'src/common/helper/mapper-status-order-tracking';
 
 @Injectable()
 export class OrderService {
@@ -137,8 +138,10 @@ export class OrderService {
                     throw new NotFoundException("Tracking does not exist");
                 }
 
+                const status = mapGhnStatusToEnum(tracking);
+
                 const orderTracking = order.trackings.find(
-                    t => t.statusOrderTracking === tracking,
+                    t => t.statusOrderTracking === status,
                 );
 
                 if (!orderTracking) {
