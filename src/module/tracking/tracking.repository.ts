@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { mapGhnStatusToEnum } from "src/common/helper/mapper-status-order-tracking";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
@@ -16,7 +17,7 @@ export class TrackingRepository {
             where: {
                 id: trackingId
             }, data: {
-                statusOrderTracking: status
+                statusOrderTracking: mapGhnStatusToEnum(status)
             }
         })
     }
