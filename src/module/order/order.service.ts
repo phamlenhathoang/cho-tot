@@ -91,9 +91,13 @@ export class OrderService {
                     }
 
                     const trackingData = await this.ghnService.getTrackingInfo(codeId);
+                    if(!trackingData){
+                        throw new NotFoundException('Tracking does not exist');
+                    }
+
                     await this.trackingService.createTracking({
                         orderId: order.id,
-                        statusOrderTracking: trackingData,
+                        statusOrderTracking: 'READY_TO_PICK',
                     })
 
                     return await this.orderRepo.updateOrder(order.id, codeId, updateOrderDto.orderStatus)

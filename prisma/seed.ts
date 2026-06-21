@@ -51,24 +51,33 @@ async function main() {
                 userId: admin.id,
                 street: '123 Nguyễn Huệ',
                 ward: 'Bến Nghé',
+                wardCode: 20101,
                 district: 'Quận 1',
+                districtId: 1442,
                 city: 'Thành phố Hồ Chí Minh',
+                cityId: 202,
                 isDefault: true,
             },
             {
                 userId: customer1.id,
                 street: '45 Lê Lợi',
                 ward: 'Bến Thành',
+                wardCode: 20102,
                 district: 'Quận 1',
+                districtId: 1442,
                 city: 'Thành phố Hồ Chí Minh',
+                cityId: 202,
                 isDefault: true,
             },
             {
                 userId: customer2.id,
                 street: '88 Võ Văn Tần',
                 ward: 'Phường 6',
+                wardCode: 20306,
                 district: 'Quận 3',
+                districtId: 1444,
                 city: 'Thành phố Hồ Chí Minh',
+                cityId: 202,
                 isDefault: true,
             },
         ],
@@ -93,6 +102,10 @@ async function main() {
             content: 'Brand new iPhone 15 Pro Max 256GB',
             authorId: customer1.id,
             categoryId: electronics.id,
+            weight: 5000,
+            width: 5,
+            length: 15,
+            height: 10
         },
     });
 
@@ -102,6 +115,10 @@ async function main() {
             content: 'Nike hoodie size L',
             authorId: customer1.id,
             categoryId: fashion.id,
+            weight: 5000,
+            width: 5,
+            length: 15,
+            height: 10
         },
     });
 
@@ -111,6 +128,10 @@ async function main() {
             content: 'MacBook Air M2 16GB RAM',
             authorId: customer2.id,
             categoryId: electronics.id,
+            weight: 10000,
+            width: 5,
+            length: 15,
+            height: 10
         },
     });
 
