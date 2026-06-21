@@ -67,4 +67,8 @@ export class CloudnaryService {
 
         return Promise.all(uploadPromises);
     }
+
+    async deleteImage(publicId: any) : Promise<void>{
+        return cloudinary.uploader.destroy(publicId)
+    }
 }

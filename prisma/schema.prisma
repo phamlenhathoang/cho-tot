@@ -125,6 +125,7 @@ model Image {
   id        Int     @id @default(autoincrement()) 
   description   String?
   url String
+  publisId  String?
   isAvatar Boolean? @default(false)
   published Boolean @default(true)
   createdAt DateTime @default(now())
@@ -164,13 +165,26 @@ model Order{
   trackings    OrderTracking[]  @relation("TrackingOrder")
 }
 
+enum StatusOrderTracking{
+  READY_TO_PICK 
+  PICKING 
+  PICKED 
+  STORING 
+  DELIVERING 
+  DELIVERED
+  DELIVERY_FAIL
+  WAITING_TO_RETURN 
+  RETURN 
+  RETURNED 
+  }
+
 model OrderTracking{
   id    Int   @id   @default(autoincrement())
 
   orderId    Int   
   order     Order @relation("TrackingOrder", fields:[orderId], references:[id])
 
-  statusOrderTracking   String
+  statusOrderTracking   StatusOrderTracking
   createAt    DateTime @default(now())
 }
 

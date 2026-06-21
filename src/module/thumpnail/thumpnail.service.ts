@@ -11,8 +11,10 @@ export class ThumpnailService {
     ) { }
 
     async saveImages(postId: number, files: any) {
-        const result = await this.cloudinaryService.uploadImages(files);
-        const urls: string[] = result.map(x => x.url);
+        const urls = await this.cloudinaryService.uploadImages(files);
+        if(!urls){
+            throw new NotFoundException('Urls does not exist');
+        }
         return await this.thumbnailRepo.addImages(urls, postId);
     }
 
@@ -24,9 +26,10 @@ export class ThumpnailService {
                 throw new NotFoundException("Image does not exist");
             }
 
+            await this.cloudinaryService.deleteImage(image.publisId!);
+
             const result = await this.cloudinaryService.uploadImage(file);
-            
-            return this.thumbnailRepo.update(imageId, result.url);
+            return this.thumbnailRepo.update(imageId, result);
         } catch (error) {
             throw error;
         }

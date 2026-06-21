@@ -27,8 +27,11 @@ export class PostService {
 
     async createPost(createPostDto: PostDto, files: Express.Multer.File[], user: any) {
         try {
-            const result = await this.cloudinaryService.uploadImages(files);
-            const urls: string [] = result.map(x => x.url);
+            const urls = await this.cloudinaryService.uploadImages(files);
+            // const urls: string [] = result.map(x => x.url);
+            if(!urls){
+                throw new NotFoundException('Urls doest not exist');
+            }
 
             const category = await this.categoryRepo.getCategoryById(createPostDto.categoryId);
             if (!category) {

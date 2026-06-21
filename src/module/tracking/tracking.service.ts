@@ -27,9 +27,7 @@ export class TrackingService {
         }
     }
 
-    async updateTracking(trackingId: number, tracking: string) {  
-        return await this.trackingRepository.updateTracking(trackingId, tracking)
+    async updateTracking(trackingId: number, status: any) {  
+        return await this.trackingRepository.updateTracking(trackingId, status)
     }
-
-    
 }

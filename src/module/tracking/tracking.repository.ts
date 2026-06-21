@@ -11,12 +11,12 @@ export class TrackingRepository {
         })
     }
 
-    async updateTracking(trackingId: number, tracking: string) {
+    async updateTracking(trackingId: number, status: any) {
         return await this.prismaService.orderTracking.update({
             where: {
                 id: trackingId
             }, data: {
-                statusOrderTracking: tracking
+                statusOrderTracking: status
             }
         })
     }

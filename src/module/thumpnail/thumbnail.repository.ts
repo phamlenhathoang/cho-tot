@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
+import { url } from "node:inspector";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
@@ -8,13 +9,14 @@ export class ThumbnaiRepo {
         private readonly prismaService: PrismaService
     ) { }
 
-    async update(imageId: number, url: string) {
+    async update(imageId: number, result: any) {
         return this.prismaService.image.update({
             where: {
                 id: imageId
             },
             data: {
-                url: url
+                url: result.url,
+                publisId: result.publicId
             }
         })
     }
@@ -27,21 +29,23 @@ export class ThumbnaiRepo {
         })
     }
 
-    async saveImages(tx: Prisma.TransactionClient, urls: string[], postId: number) {
+    async saveImages(tx: Prisma.TransactionClient, urls: any, postId: number) {
         return tx.image.createMany({
-            data: urls.map((url, index) => ({
-                url,
-                postId,
-                isAvatar: index === 0
+            data: urls.map((image, index) => ({
+                url: image.url,
+                postId: postId,
+                isAvatar: index === 0,
+                publisId: image.publicId
             })),
         });
     }
 
     async addImages(urls: any, postId: number) {
         return await this.prismaService.image.createMany({
-            data: urls.map((url) => ({
+            data: urls.map((url, publicId) => ({
                 url,
-                postId: postId
+                postId: postId,
+                publisId: publicId
             })),
         });
     }
