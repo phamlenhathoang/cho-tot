@@ -8,7 +8,10 @@ export class TrackingRepository {
 
     async createTracking(tracking: any) {
         return await this.prismaService.orderTracking.create({
-            data: tracking
+            data: {
+                orderId: tracking.orderId,
+                statusOrderTracking: mapGhnStatusToEnum(tracking.statusOrderTracking)
+            }
         })
     }
 
