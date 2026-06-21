@@ -65,25 +65,26 @@ export class TwilioService {
         }
     }
 
-    async sendOtpMail(email: string, otp?: string) {
+    async sendOtpMail(email: string, newPassword?: string) {
         const user = await this.userRepo.getUserByEmailAndPhone(email, null);
         if (!user) {
             throw new NotFoundException("User does not exist");
         }
-        if (!otp) {
-            const otp = Math.floor(
+        if (!newPassword) {
+            const newPassword = Math.floor(
                 100000 + Math.random() * 900000
             ).toString();
 
-            await this.redisService.set(email, otp, 300);
+            await this.redisService.set(email, newPassword, 300);
+            await this.userRepo.updatePassword(newPassword, user.id);
 
             await this.resendConfig.resend.emails.send({
                 from: 'onboarding@resend.dev',
                 to: email,
-                subject: 'Verify OTP',
+                subject: 'Verify new password',
                 html: `
-                    <h2>Your OTP Code</h2>
-                    <h1>${otp}</h1>
+                    <h2>Your new password</h2>
+                    <h1>${newPassword}</h1>
                     <p>OTP expires in 5 minutes.</p>
                 `,
                 });
@@ -95,7 +96,7 @@ export class TwilioService {
                 );
             }
 
-            if (storedOtp !== otp) {
+            if (storedOtp !== newPassword) {
                 throw new BadRequestException(
                     'OTP invalid'
                 );

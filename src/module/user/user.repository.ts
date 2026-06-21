@@ -126,4 +126,16 @@ export class UserRepo {
             }
         });
     }
+
+    async updatePassword(newPassword: string, userId: number){
+        return await this.prismaService.user.update({
+            data: {
+                password: newPassword
+            },
+            where: {
+                id: userId
+            }
+            
+        })
+    }
 }

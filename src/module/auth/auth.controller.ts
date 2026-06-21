@@ -74,6 +74,6 @@ export class AuthController {
   @Public()
   @Post('forget-password')
   async forgetPassword(@Body() forgetPassword: ForgetPasswordDTO) {
-
+    return await this.authService.forgetPassword(forgetPassword);
   }
 }

@@ -25,5 +25,5 @@ export class SendMailOtpDto {
 
   @IsOptional()
   @IsString()
-  otp !: string
+  newPassword !: string
 }

@@ -116,9 +116,11 @@ export class AuthService {
     }
 
     async forgetPassword(forgetPassword: ForgetPasswordDTO) {
-        const otp = Math.floor(100000 + Math.random() * 900000);
-        if (forgetPassword.phone !== undefined) {
-
+        const user = await this.userService.getUserByEmail(forgetPassword.email);
+        if(!user){
+            throw new NotFoundException("User does not exist");
         }
+
+        return await this.userService.updatePassword(forgetPassword.newPassord, user.id);
     }
 }

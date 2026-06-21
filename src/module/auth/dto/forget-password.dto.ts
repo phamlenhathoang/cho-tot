@@ -3,7 +3,7 @@ import { IsEmail, IsOptional, IsString } from "class-validator";
 export class ForgetPasswordDTO{
     @IsOptional()
     @IsString()
-    phone !: string
+    newPassord !: string
 
     @IsOptional()
     @IsEmail()
