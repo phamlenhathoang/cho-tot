@@ -4,6 +4,10 @@ import { Type } from "class-transformer";
 import { IsEnum, IsNotEmpty, IsNumber } from "class-validator";
 
 export class CreateTrackingDTO{
+    @ApiProperty({
+        example: '1',
+        description: 'OrderId'
+    })
     @Type(() => Number)
     @IsNumber()
     @IsNotEmpty()
