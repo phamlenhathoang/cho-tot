@@ -6,11 +6,12 @@ import { GhnModule } from '../ghn/ghn.module';
 import { OrderModule } from '../order/order.module';
 
 @Module({
-  imports: [GhnModule, 
-    forwardRef(() => OrderModule)
+  imports: [
+    forwardRef(() => OrderModule),
+    forwardRef(() => GhnModule)
   ],
   controllers: [TrackingController],
   providers: [TrackingService, TrackingRepository],
   exports: [TrackingService]
 })
-export class TrackingModule {}
+export class TrackingModule { }

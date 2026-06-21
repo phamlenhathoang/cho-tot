@@ -101,4 +101,12 @@ export class OrderRepository {
     async getAll(){
         return await this.prismaService.order.findMany()
     }
+
+    async getOrderByCodeId(codeId: string){
+        return await this.prismaService.order.findFirst({
+            where:{
+                codeId: codeId
+            }
+        })
+    }
 }

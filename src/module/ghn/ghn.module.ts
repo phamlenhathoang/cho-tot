@@ -4,11 +4,17 @@ import { GhnController } from './ghn.controller';
 import { GHNConfig } from '../auth/config/ghn.config';
 import { HttpModule } from '@nestjs/axios';
 import { AddressModule } from '../address/address.module';
+import { OrderModule } from '../order/order.module';
+import { TrackingModule } from '../tracking/tracking.module';
 
 @Module({
-  imports:[HttpModule, AddressModule, forwardRef(() => AddressModule)],
+  imports: [HttpModule, AddressModule,
+    forwardRef(() => AddressModule),
+    forwardRef(() => OrderModule),
+    forwardRef(() => TrackingModule),
+  ],
   controllers: [GhnController],
   providers: [GhnService, GHNConfig],
-  exports:[GhnService]
+  exports: [GhnService]
 })
-export class GhnModule {}
+export class GhnModule { }

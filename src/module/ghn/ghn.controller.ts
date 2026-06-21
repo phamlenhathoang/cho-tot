@@ -1,13 +1,17 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Logger, Post, Query } from '@nestjs/common';
 import { GhnService } from './ghn.service';
 import { GetWardCodeDTO } from './dto/getwardcode.dto';
 import { get } from 'axios';
 import { GetDistrictIdDTO } from './dto/get-district-id.dto';
 import { GetShipFeeDTO } from './dto/get-ship-fee.dto';
 import { CreateGHNOrderDTO } from './dto/create-ghn-order.dto';
+import { GhnCallbackDto } from './dto/ghn-callback.dto';
 
 @Controller('ghn')
 export class GhnController {
+
+  private readonly logger = new Logger(GhnController.name);
+
   constructor(private readonly ghnService: GhnService) { }
 
   @Get('get-city-id')
@@ -47,5 +51,20 @@ export class GhnController {
   async createGhnOrder(@Body() createGhnOrder: CreateGHNOrderDTO){
     console.log("BODY RECEIVED:", createGhnOrder);
     return await this.ghnService.createGHNOrder(createGhnOrder);
+  }
+
+  @Post()
+  @HttpCode(200) // QUAN TRỌNG: luôn 200, GHN sẽ retry 10 lần x 5s nếu không phải 200
+  async handleCallback(@Body() payload: GhnCallbackDto) {
+    this.logger.log(`Nhận callback GHN: ${payload.CodeId} -> ${payload.Status}`);
+
+    try {
+      await this.ghnService.processCallback(payload);
+    } catch (error) {
+      // Log lỗi nội bộ, KHÔNG throw ra ngoài để tránh GHN retry liên tục
+      this.logger.error(`Lỗi xử lý callback ${payload.CodeId}`, error);
+    }
+
+    return { success: true };
   }
 }

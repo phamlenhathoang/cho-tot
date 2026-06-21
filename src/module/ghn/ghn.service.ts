@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { GHNConfig } from '../auth/config/ghn.config';
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
@@ -6,13 +6,21 @@ import { GetShipFeeDTO } from './dto/get-ship-fee.dto';
 import { CreateGHNOrderDTO } from './dto/create-ghn-order.dto';
 import { TrackingService } from '../tracking/tracking.service';
 import { AddressRepository } from '../address/address.repository';
+import { GhnCallbackDto } from './dto/ghn-callback.dto';
+import { OrderRepository } from '../order/order.repository';
+import { TrackingRepository } from '../tracking/tracking.repository';
+import { mapGhnStatusToEnum } from 'src/common/helper/mapper-status-order-tracking';
 
 @Injectable()
 export class GhnService {
+
+    private readonly logger = new Logger(GhnService.name);
+
     constructor(
         private readonly ghnConfig: GHNConfig,
         private readonly httpService: HttpService,
-        private readonly addressRepository: AddressRepository
+        private readonly orderRepo: OrderRepository,
+        private readonly trackingRepo: TrackingRepository
     ) { }
 
     private get headers() {
@@ -103,10 +111,10 @@ export class GhnService {
         addressSellerDistrictId: number,
         addressBuyerDistrictId: number,
     ) {
-        
+
         // const addressSeller = await this.addressRepository.getAddressById(addressSellerId);
         // const addressBuyer = await this.addressRepository.getAddressById(addressBuyerId);
-    
+
         // console.log(addressBuyer?.districtId + "  " + addressSeller?.districtId)
         // if(!addressSeller || !addressSeller.districtId || !addressBuyer || !addressBuyer.districtId){
         //     throw new NotFoundException("User or districtId user does not exist");
@@ -214,7 +222,7 @@ export class GhnService {
                     `${this.ghnConfig.baseUrl}/shiip/public-api/v2/shipping-order/detail`,
                     {
                         order_code: orderCode
-                    },  
+                    },
                     {
                         headers: this.headers
                     }
@@ -224,5 +232,44 @@ export class GhnService {
         } catch (error) {
             throw error;
         }
+    }
+
+    async processCallback(payload: GhnCallbackDto) {
+        const { CodeId, Status, Type, Time } = payload;
+
+        // 1. Tìm order nội bộ theo mã GHN
+        const order = await this.orderRepo.getOrderByCodeId(CodeId)
+
+        if (!order) {
+            this.logger.warn(`Không tìm thấy order với GHN code: ${CodeId}`);
+            return;
+        }
+
+        const statusTracking = mapGhnStatusToEnum(Status);
+        if (!statusTracking) {
+            throw new Error(`Không nhận diện được GHN status: ${Status}`);
+        }
+
+        // 2. Lưu lịch sử tracking (luôn lưu, dù status đã từng thấy)
+        await this.trackingRepo.createTracking({
+            orderId: order.id,
+            status: statusTracking
+        });
+
+        // // 3. Map sang display status và update Order
+        // const displayStatus = GHN_TO_DISPLAY_MAP[Status as StatusOrderTracking];
+
+        // await this.prisma.order.update({
+        //     where: { id: order.id },
+        //     data: {
+        //         shippingStatus: Status,
+        //         displayStatus,
+        //         lastSyncedAt: new Date(),
+        //     },
+        // });
+
+        this.logger.log(`Đã update order ${order.id} -> (${Status})`);
+
+        // 4. (Optional) Bắn notify cho user qua WebSocket/Push notification ở đây
     }
 }

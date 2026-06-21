@@ -13,9 +13,10 @@ import { TransactionService } from '../transaction/tracsaction.service';
 import { OfferModule } from '../offer/offer.module';
 
 @Module({
-  imports:[UserModule, PostModule, MapModule, HttpModule, GhnModule, 
+  imports:[UserModule, PostModule, MapModule, HttpModule, 
     forwardRef(() => OfferModule),
-    forwardRef(() => TrackingModule)
+    forwardRef(() => TrackingModule),
+    forwardRef(() => GhnModule)
   ],
   controllers: [OrderController],
   providers: [OrderService, OrderRepository, GHTKConfig, TransactionService],
