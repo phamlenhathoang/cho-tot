@@ -55,15 +55,15 @@ export class GhnController {
 
   @Post()
   @HttpCode(200) // QUAN TRỌNG: luôn 200, GHN sẽ retry 10 lần x 5s nếu không phải 200
-  async handleCallback(@Body() payload: GhnCallbackDto) {
-    this.logger.log(`Nhận callback GHN: ${payload.CodeId} -> ${payload.Status}`);
+  async handleCallback() {
+    // this.logger.log(`Nhận callback GHN: ${payload.CodeId} -> ${payload.Status}`);
 
-    try {
-      await this.ghnService.processCallback(payload);
-    } catch (error) {
-      // Log lỗi nội bộ, KHÔNG throw ra ngoài để tránh GHN retry liên tục
-      this.logger.error(`Lỗi xử lý callback ${payload.CodeId}`, error);
-    }
+    // try {
+    //   await this.ghnService.processCallback(payload);
+    // } catch (error) {
+    //   // Log lỗi nội bộ, KHÔNG throw ra ngoài để tránh GHN retry liên tục
+    //   this.logger.error(`Lỗi xử lý callback ${payload.CodeId}`, error);
+    // }
 
     return { success: true };
   }
