@@ -12,6 +12,6 @@ import { OrderModule } from '../order/order.module';
   ],
   controllers: [TrackingController],
   providers: [TrackingService, TrackingRepository],
-  exports: [TrackingService]
+  exports: [TrackingService, TrackingRepository]
 })
 export class TrackingModule { }
