@@ -98,7 +98,7 @@ export class OrderService {
 
                     await this.trackingService.createTracking({
                         orderId: order.id,
-                        statusOrderTracking: StatusOrderTracking.READY_TO_PICK,
+                        statusOrderTracking: trackingData,
                     })
 
                     return await this.orderRepo.updateOrder(order.id, codeId, updateOrderDto.orderStatus)
