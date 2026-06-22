@@ -96,13 +96,9 @@ export class OrderService {
                         throw new NotFoundException('Tracking does not exist');
                     }
 
-                    console.log(trackingData)
-
-                    const status = mapGhnStatusToEnum(trackingData);
-
                     await this.trackingService.createTracking({
                         orderId: order.id,
-                        statusOrderTracking: status,
+                        statusOrderTracking: StatusOrderTracking.READY_TO_PICK,
                     })
 
                     return await this.orderRepo.updateOrder(order.id, codeId, updateOrderDto.orderStatus)
