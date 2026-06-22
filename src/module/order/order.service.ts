@@ -6,7 +6,7 @@ import { PostRepository } from '../post/post.repositosy';
 import { MapService } from '../map/map.service';
 import { GHTKConfig } from '../auth/config/ghtk.config';
 import { UpdateOrderDTO } from './dto/update-order.dto';
-import { OfferStatus, OrderStatus, Prisma } from '@prisma/client';
+import { OfferStatus, OrderStatus, Prisma, StatusOrderTracking } from '@prisma/client';
 import { GhnService } from '../ghn/ghn.service';
 import { TrackingService } from '../tracking/tracking.service';
 import { TransactionService } from '../transaction/tracsaction.service';
@@ -98,7 +98,7 @@ export class OrderService {
 
                     await this.trackingService.createTracking({
                         orderId: order.id,
-                        statusOrderTracking: 'READY_TO_PICK',
+                        statusOrderTracking: StatusOrderTracking.READY_TO_PICK,
                     })
 
                     return await this.orderRepo.updateOrder(order.id, codeId, updateOrderDto.orderStatus)
