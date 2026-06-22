@@ -96,6 +96,8 @@ export class OrderService {
                         throw new NotFoundException('Tracking does not exist');
                     }
 
+                    console.log(trackingData)
+
                     const status = mapGhnStatusToEnum(trackingData);
 
                     await this.trackingService.createTracking({
