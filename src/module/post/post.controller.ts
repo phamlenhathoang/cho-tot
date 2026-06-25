@@ -254,8 +254,8 @@ export class PostController {
   }
 
   @Get('all')
-  async getAllPost() {
-    return this.postService.getAllPost();
+  async getAllPost(@Query() paginatioDto: PaginationDTO) {
+    return this.postService.getAllPost(paginatioDto);
   }
 
   @ApiBearerAuth('access-token')

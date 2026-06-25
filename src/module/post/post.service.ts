@@ -158,13 +158,13 @@ export class PostService {
         return this.postRepo.getPostById(id)
     }
 
-    async getAllPost(){
-        const key = `getAllPost`;
+    async getAllPost(paginatioDto: PaginationDTO){
+        const key = `post:all:page=${paginatioDto.page}:limit=${paginatioDto.limit}`;
         const cache = await this.redis.get(key);
         if(cache){
             return JSON.parse(cache)
         }
-        const posts =  await this.postRepo.getAllPost();
+        const posts =  await this.postRepo.getAllPost(paginatioDto);
         if(!posts){
             return
         }

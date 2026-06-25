@@ -130,8 +130,9 @@ export class PostRepository {
     }
 
     async getPostsByUserId(user: User, title: string, paginatioDto: PaginationDTO) {
+        const skip = (paginatioDto.page - 1) * paginatioDto.limit
         const posts = await this.prismaService.post.findMany({
-            skip: paginatioDto.skip,
+            skip: skip,
             take: paginatioDto.limit,
             where: {
                 title: title,
@@ -155,17 +156,23 @@ export class PostRepository {
         }))
     }
 
-    async getAllPost(){
+    async getAllPost(paginatioDto: PaginationDTO) {
+        // giới hạn cứng limit tối đa 50 -> tránh client tự ý gọi limit=999999
+        // và vô tình tái tạo lại đúng lỗi "lấy hết bảng" như cũ.
+
+        const skip = (paginatioDto.page - 1) * paginatioDto.limit;
         return await this.prismaService.post.findMany({
+            skip: skip,
+            take: paginatioDto.limit,
             orderBy: {
                 createdAt: 'desc'
             }
         })
     }
 
-    async getAllPostByUserId(userId: number){
+    async getAllPostByUserId(userId: number) {
         return await this.prismaService.post.findMany({
-            where:{
+            where: {
                 authorId: userId
             },
             include: {

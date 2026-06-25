@@ -22,7 +22,7 @@ import { JwtService } from '@nestjs/jwt';
 // @WebSocketGateway({
 //   cors: { origin: '*' },
 // })
-export class ChatGateway
+export class ChatGatewayOrther
   implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly prisma: PrismaService,

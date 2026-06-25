@@ -39,9 +39,9 @@ async function bootstrap() {
     )
 
     .build();
-  const document  = () => SwaggerModule.createDocument(app, config);
+  const document = () => SwaggerModule.createDocument(app, config);
 
-  SwaggerModule.setup('api', app, document );
+  SwaggerModule.setup('api', app, document);
 
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
@@ -51,7 +51,9 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'https://chotot-mall.vercel.app',
-      'http://localhost:5173'
+      'http://localhost:5173',
+      'http://127.0.0.1:5500',   // Live Server test chat
+      'http://localhost:5500'
     ],
     credentials: true,
   });

@@ -22,6 +22,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AiModule } from './module/ai/ai.module';
 import { CloudnaryModule } from './module/cloudnary/cloudnary.module';
+import { ConversationModule } from './module/conversation/conversation.module';
 
 @Module({
   imports: [UserModule, AuthModule, CategotyModule, ThumpnailModule, PostModule, ChatModule,
@@ -39,6 +40,7 @@ import { CloudnaryModule } from './module/cloudnary/cloudnary.module';
     RedisModule,
     AiModule,
     CloudnaryModule,
+    ConversationModule,
 
     // ServeStaticModule.forRoot({
     //   rootPath: join(__dirname, '..', 'module','chat','html'), // Đường dẫn tới thư mục chứa index.html

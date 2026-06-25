@@ -10,7 +10,8 @@ import { CreateGoogleUserDTO } from "./dto/google.user.dto";
 export class UserRepo {
     constructor(private readonly prismaService: PrismaService) { }
 
-    async getAll(skip, limit) {
+    async getAll(page, limit) {
+        const skip = (page - 1) * limit
         return await this.prismaService.user.findMany({
             skip: Number(skip),
             take: Number(limit),

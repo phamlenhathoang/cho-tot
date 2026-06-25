@@ -16,7 +16,7 @@ export class UserService {
     ) { }
 
     async GetAll(paginationDto: PaginationDTO) {
-        return this.userRepo.getAll(paginationDto.skip, paginationDto.limit)
+        return this.userRepo.getAll(paginationDto.page, paginationDto.limit)
     }
 
     async getById(userId: number) {

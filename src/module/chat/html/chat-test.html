@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<title>Test Chat - Chợ Tốt Clone</title>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    padding: 20px;
+    color: #1c1e21;
+  }
+  h1 { font-size: 18px; margin: 0 0 16px; }
+  .panel {
+    background: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+  .panel h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #65676b;
+    margin: 0 0 12px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: #65676b;
+  }
+  input, button, textarea {
+    font-family: inherit;
+    font-size: 14px;
+  }
+  input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccd0d5;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+  .row { display: flex; gap: 10px; }
+  .row > div { flex: 1; }
+  button {
+    background: #1877f2;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  button:hover { background: #166fe5; }
+  button:disabled { background: #ccd0d5; cursor: not-allowed; }
+  button.secondary { background: #e4e6eb; color: #1c1e21; }
+  button.secondary:hover { background: #d8dade; }
+  .status {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+    margin-right: 6px;
+  }
+  .status.online { background: #31a24c; }
+  .status.offline { background: #fa383e; }
+  .status-line { font-size: 13px; color: #65676b; margin-bottom: 10px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .chat-box {
+    border: 1px solid #ccd0d5;
+    border-radius: 6px;
+    height: 320px;
+    overflow-y: auto;
+    padding: 10px;
+    background: #fafbfc;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .msg {
+    max-width: 75%;
+    padding: 6px 10px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  .msg.mine {
+    background: #1877f2;
+    color: #fff;
+    align-self: flex-end;
+    border-bottom-right-radius: 3px;
+  }
+  .msg.theirs {
+    background: #e4e6eb;
+    color: #1c1e21;
+    align-self: flex-start;
+    border-bottom-left-radius: 3px;
+  }
+  .msg .time {
+    display: block;
+    font-size: 10px;
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+  .msg-input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .msg-input-row input { margin-bottom: 0; }
+  .log {
+    background: #1c1e21;
+    color: #4ade80;
+    font-family: "SF Mono", Consolas, monospace;
+    font-size: 11.5px;
+    padding: 10px;
+    border-radius: 6px;
+    height: 140px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+  .log .err { color: #f87171; }
+  .log .info { color: #60a5fa; }
+  small.hint { color: #8a8d91; display: block; margin-top: -6px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<h1>🧪 Test Chat — Chợ Tốt Clone</h1>
+
+<div class="panel">
+  <h2>Cấu hình</h2>
+  <label>API Base URL</label>
+  <input id="apiUrl" value="http://localhost:3000" />
+  <small class="hint">REST API và WebSocket sẽ dùng cùng host này (namespace /chat)</small>
+</div>
+
+<div class="grid">
+  <!-- COLUMN A: BUYER -->
+  <div>
+    <div class="panel">
+      <h2>👤 User A (Buyer)</h2>
+      <div class="row">
+        <div><label>Email</label><input id="emailA" value="buyer@test.com" /></div>
+        <div><label>Password</label><input id="passA" type="password" value="123456" /></div>
+      </div>
+      <button onclick="login('A')">Đăng nhập</button>
+      <span id="statusA" class="status-line"><span class="status offline"></span>Chưa đăng nhập</span>
+    </div>
+
+    <div class="panel">
+      <h2>Bắt đầu chat (Buyer → Seller)</h2>
+      <label>Post ID (số)</label>
+      <input id="productIdA" placeholder="ví dụ: 1" />
+      <label>Seller ID (userId của người bán, số)</label>
+      <input id="sellerIdA" placeholder="ví dụ: 2" />
+      <button onclick="startConversation('A')">Chat with Seller</button>
+      <button class="secondary" onclick="connectSocket('A')">Connect WebSocket</button>
+      <div class="status-line" id="convStatusA"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Khung chat A</h2>
+      <div class="chat-box" id="chatBoxA"></div>
+      <div class="msg-input-row">
+        <input id="msgInputA" placeholder="Nhập tin nhắn..." onkeydown="if(event.key==='Enter') sendMessage('A')" />
+        <button onclick="sendMessage('A')">Gửi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLUMN B: SELLER -->
+  <div>
+    <div class="panel">
+      <h2>👤 User B (Seller)</h2>
+      <div class="row">
+        <div><label>Email</label><input id="emailB" value="seller@test.com" /></div>
+        <div><label>Password</label><input id="passB" type="password" value="123456" /></div>
+      </div>
+      <button onclick="login('B')">Đăng nhập</button>
+      <span id="statusB" class="status-line"><span class="status offline"></span>Chưa đăng nhập</span>
+    </div>
+
+    <div class="panel">
+      <h2>Mở conversation đã có (Seller phía)</h2>
+      <small class="hint">Seller không tự tạo conversation — chỉ xem lại conversation mà buyer đã tạo. Copy conversationId từ cột A (sau khi A bấm "Chat with Seller") dán vào đây.</small>
+      <label>Conversation ID</label>
+      <input id="convIdB" placeholder="dán conversationId từ cột A" />
+      <button onclick="openExistingConversation('B')">Mở chat (lấy lịch sử)</button>
+      <button class="secondary" onclick="connectSocket('B')">Connect WebSocket</button>
+      <div class="status-line" id="convStatusB"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Khung chat B</h2>
+      <div class="chat-box" id="chatBoxB"></div>
+      <div class="msg-input-row">
+        <input id="msgInputB" placeholder="Nhập tin nhắn..." onkeydown="if(event.key==='Enter') sendMessage('B')" />
+        <button onclick="sendMessage('B')">Gửi</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>📋 Log hệ thống</h2>
+  <div class="log" id="log"></div>
+</div>
+
+<script>
+  // state riêng cho mỗi "user" test (A = buyer, B = seller)
+  const state = {
+    A: { token: null, userId: null, socket: null, conversationId: null, otherUserId: null },
+    B: { token: null, userId: null, socket: null, conversationId: null, otherUserId: null },
+  };
+
+  function log(msg, type = '') {
+    const el = document.getElementById('log');
+    const time = new Date().toLocaleTimeString();
+    const span = type ? `<span class="${type}">[${time}] ${msg}</span>` : `[${time}] ${msg}`;
+    el.innerHTML += span + '\n';
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function apiBase() {
+    return document.getElementById('apiUrl').value.trim().replace(/\/$/, '');
+  }
+
+  function decodeJwt(token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ---------- LOGIN ----------
+  async function login(who) {
+    const email = document.getElementById('email' + who).value;
+    const password = document.getElementById('pass' + who).value;
+
+    try {
+      const res = await fetch(`${apiBase()}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const json = await res.json();
+
+      if (!res.ok || !json.data?.accessToken) {
+        throw new Error(json.message || 'Đăng nhập thất bại');
+      }
+
+      const token = json.data.accessToken;
+      const payload = decodeJwt(token);
+
+      state[who].token = token;
+      state[who].userId = payload?.sub; // JWT payload dùng field "sub" làm userId
+
+      document.getElementById('status' + who).innerHTML =
+        `<span class="status online"></span>Đã đăng nhập — userId: <b>${state[who].userId}</b>`;
+
+      log(`User ${who} đăng nhập thành công (userId=${state[who].userId})`, 'info');
+    } catch (err) {
+      log(`Lỗi đăng nhập User ${who}: ${err.message}`, 'err');
+      document.getElementById('status' + who).innerHTML =
+        `<span class="status offline"></span>Lỗi: ${err.message}`;
+    }
+  }
+
+  // ---------- SELLER MỞ CONVERSATION ĐÃ CÓ (không tạo mới) ----------
+  async function openExistingConversation(who) {
+    if (!state[who].token) {
+      log(`User ${who} chưa đăng nhập`, 'err');
+      return;
+    }
+
+    const convId = document.getElementById('convId' + who).value.trim();
+    if (!convId) {
+      log(`User ${who}: thiếu conversationId`, 'err');
+      return;
+    }
+
+    state[who].conversationId = convId;
+    document.getElementById('convStatus' + who).innerHTML = `✅ conversationId: <b>${convId}</b>`;
+
+    await loadMessages(who);
+  }
+
+  // ---------- TẠO / LẤY CONVERSATION ----------
+  async function startConversation(who) {
+    if (!state[who].token) {
+      log(`User ${who} chưa đăng nhập`, 'err');
+      return;
+    }
+
+    const postId = Number(document.getElementById('productId' + who).value.trim());
+    const otherId = Number(document.getElementById('sellerId' + who).value.trim());
+
+    if (!postId || !otherId) {
+      log(`User ${who}: thiếu postId hoặc ID người còn lại`, 'err');
+      return;
+    }
+
+    try {
+      // Lưu ý: API createOrGetConversation luôn nhận { postId, sellerId }
+      // Khi user B (seller) mở lại, "sellerId" gửi lên vẫn phải là ID của seller thật (chính B),
+      // còn buyerId BE tự lấy từ JWT của người đang gọi.
+      // Vì B chính là seller, B cần gửi sellerId = userId của B (chính mình),
+      // và back-end sẽ tự nhận diện B là buyer hoặc sàng lọc theo vai trò thực tế của bạn.
+      const body = who === 'A'
+        ? { postId, sellerId: otherId }
+        : { postId, sellerId: state.B.userId }; // B tự coi mình là seller
+
+      const res = await fetch(`${apiBase()}/conversation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${state[who].token}`,
+        },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+
+      if (!res.ok) throw new Error(json.message || 'Không tạo được conversation');
+
+      const conversation = json.data || json; // tuỳ response bạn có bọc "data" hay không
+      state[who].conversationId = conversation.id;
+      state[who].otherUserId = otherId;
+
+      document.getElementById('convStatus' + who).innerHTML =
+        `✅ conversationId: <b>${conversation.id}</b>`;
+
+      log(`User ${who}: lấy/tạo conversation thành công (id=${conversation.id})`, 'info');
+
+      // load lịch sử chat ngay sau khi có conversationId
+      await loadMessages(who);
+    } catch (err) {
+      log(`Lỗi tạo conversation (User ${who}): ${err.message}`, 'err');
+      document.getElementById('convStatus' + who).innerHTML = `❌ ${err.message}`;
+    }
+  }
+
+  // ---------- LOAD LỊCH SỬ CHAT (REST) ----------
+  async function loadMessages(who) {
+    const convId = state[who].conversationId;
+    if (!convId) return;
+
+    try {
+      const res = await fetch(
+        `${apiBase()}/chat/${convId}?page=1&limit=50`,
+        { headers: { Authorization: `Bearer ${state[who].token}` } }
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'Không lấy được lịch sử');
+
+      const messages = (json.data?.data || json.data || []).slice().reverse(); // BE trả mới->cũ, đảo lại để hiện cũ->mới
+
+      const box = document.getElementById('chatBox' + who);
+      box.innerHTML = '';
+      messages.forEach((m) => renderMessage(who, m));
+
+      log(`User ${who}: tải ${messages.length} tin nhắn lịch sử`, 'info');
+    } catch (err) {
+      log(`Lỗi tải lịch sử (User ${who}): ${err.message}`, 'err');
+    }
+  }
+
+  // ---------- RENDER 1 TIN NHẮN VÀO KHUNG CHAT ----------
+  function renderMessage(who, message) {
+    const box = document.getElementById('chatBox' + who);
+    const isMine = message.senderId === state[who].userId;
+    const div = document.createElement('div');
+    div.className = `msg ${isMine ? 'mine' : 'theirs'}`;
+    const time = message.createdAt
+      ? new Date(message.createdAt).toLocaleTimeString()
+      : '';
+    div.innerHTML = `${escapeHtml(message.content)}<span class="time">${time}</span>`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // ---------- WEBSOCKET CONNECT ----------
+  function connectSocket(who) {
+    if (!state[who].token) {
+      log(`User ${who} chưa đăng nhập, không thể connect socket`, 'err');
+      return;
+    }
+    if (state[who].socket) {
+      log(`User ${who} đã connect socket trước đó`, 'info');
+      return;
+    }
+
+    const socket = io(`${apiBase()}/chat`, {
+      auth: { token: state[who].token },
+      transports: ['websocket'],
+    });
+
+    socket.on('connect', () => {
+      log(`User ${who}: WebSocket connected (socket.id=${socket.id})`, 'info');
+    });
+
+    socket.on('disconnect', () => {
+      log(`User ${who}: WebSocket disconnected`, 'err');
+    });
+
+    socket.on('connect_error', (err) => {
+      log(`User ${who}: lỗi connect socket — ${err.message}`, 'err');
+    });
+
+    // tin nhắn mới từ người khác
+    socket.on('newMessage', (message) => {
+      log(`User ${who}: nhận newMessage realtime — "${message.content}" | raw: ${JSON.stringify(message)}`, 'info');
+      // render trực tiếp, không lọc theo conversationId (vì khung test mỗi cột chỉ mở 1 conversation)
+      renderMessage(who, message);
+    });
+
+    // server xác nhận tin mình gửi đã lưu thành công
+    socket.on('messageSent', (message) => {
+      log(`User ${who}: messageSent xác nhận — "${message.content}"`, 'info');
+    });
+
+    socket.on('messageError', (err) => {
+      log(`User ${who}: messageError — ${err.error}`, 'err');
+    });
+
+    state[who].socket = socket;
+  }
+
+  // ---------- GỬI TIN NHẮN (qua WebSocket) ----------
+  function sendMessage(who) {
+    const input = document.getElementById('msgInput' + who);
+    const content = input.value.trim();
+    if (!content) return;
+
+    if (!state[who].socket || !state[who].socket.connected) {
+      log(`User ${who}: socket chưa connect, bấm "Connect WebSocket" trước`, 'err');
+      return;
+    }
+    if (!state[who].conversationId) {
+      log(`User ${who}: chưa có conversationId, bấm "Chat with Seller" trước`, 'err');
+      return;
+    }
+
+    state[who].socket.emit('sendMessage', {
+      conversationId: state[who].conversationId,
+      content,
+    });
+
+    // optimistic render tạm (sẽ có message thật từ "messageSent" xác nhận sau)
+    renderMessage(who, {
+      senderId: state[who].userId,
+      content,
+      createdAt: new Date().toISOString(),
+    });
+
+    input.value = '';
+  }
+</script>
+
+</body>
+</html>
