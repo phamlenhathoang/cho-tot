@@ -15,8 +15,9 @@ export class ConversationController {
       return await this.conversationService.createOrGetConversation(dto, req.user.id)
   }
 
-  @Get('id')
-  async getConversation(@Req() rq, @Param('id') id: number,){
+  @Get(':id')
+  async getConversation(@Req() rq, @Param('id') id: number){
+    console.log(id)
       return await this.conversationService.getConversationById(id, rq.user.id)
   }
 }

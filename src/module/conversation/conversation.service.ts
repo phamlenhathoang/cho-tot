@@ -21,7 +21,7 @@ export class ConversationService {
         return conservation;
     }
 
-    async getConversationById(userId: number, id: number){
+    async getConversationById(id: number, userId: number){
         return await this.conservationRepository.getConversationById(id, userId)
     }
 }

@@ -18,6 +18,7 @@ export class ConversationRepository {
     }
 
     async getConversationById(id: number, userId) {
+        console.log(id + "   " + userId)
         return await this.prisma.conversation.findUnique({
             where: {
                 id: id,
