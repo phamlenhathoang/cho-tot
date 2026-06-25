@@ -8,7 +8,7 @@ import { RefreshAuthGuard } from './guards/refresh-auth/refresh-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guards/jwt-auth.guards.guard';
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
 import { Public } from '../../common/public.decorator';
-import { ForgetPasswordDTO } from './dto/forget-password.dto';
+import { UpdatePasswordDTO } from './dto/update-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -72,8 +72,8 @@ export class AuthController {
   }
 
   @Public()
-  @Post('forget-password')
-  async forgetPassword(@Body() forgetPassword: ForgetPasswordDTO) {
-    return await this.authService.forgetPassword(forgetPassword);
+  @Post('update-password')
+  async updatePassword(@Body() updatePassword: UpdatePasswordDTO) {
+    return await this.authService.updatePassword(updatePassword);
   }
 }

@@ -8,7 +8,7 @@ import type { ConfigType } from '@nestjs/config';
 import * as argon2 from "argon2";
 import { CreateUserDTO } from '../user/dto/create.user.dto';
 import { CreateGoogleUserDTO } from '../user/dto/google.user.dto';
-import { ForgetPasswordDTO } from './dto/forget-password.dto';
+import { UpdatePasswordDTO } from './dto/update-password.dto';
 import { UserRepo } from '../user/user.repository';
 
 
@@ -115,12 +115,12 @@ export class AuthService {
         return await this.userService.Create(googleUser);
     }
 
-    async forgetPassword(forgetPassword: ForgetPasswordDTO) {
-        const user = await this.userService.getUserByEmail(forgetPassword.email);
+    async updatePassword(updatePassword: UpdatePasswordDTO) {
+        const user = await this.userService.getUserByEmail(updatePassword.email);
         if(!user){
             throw new NotFoundException("User does not exist");
         }
 
-        return await this.userService.updatePassword(forgetPassword.newPassord, user.id);
+        return await this.userService.updatePassword(updatePassword.newPassord, user.id);
     }
 }
