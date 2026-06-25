@@ -2,8 +2,10 @@ import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/comm
 import { ConversationService } from './conversation.service';
 import { CreateConversationDto } from './dto/create-conversation';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guards/jwt-auth.guards.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('conversation')
+@ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 export class ConversationController {
   constructor(private readonly conversationService: ConversationService) {}
