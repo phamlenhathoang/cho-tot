@@ -17,15 +17,21 @@ export class ConversationRepository {
         })
     }
 
-    async getConversationById(id: number, userId) {
-        console.log(id + "   " + userId)
-        return await this.prisma.conversation.findUnique({
+    async getConversationById(id: number, userId: number) {
+        return await this.prisma.conversation.findFirst({
             where: {
                 id: id,
                 OR:[
                     {buyerId: userId},
                     {sellerId: userId}
                 ]
+            }, 
+            include :{
+                messages: {
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                }
             }
         })
     }
@@ -40,8 +46,8 @@ export class ConversationRepository {
         })
     }
 
-    async getConservationByUserId(userId: number) {
-        return this.prisma.conversation.findMany({
+    async getAllConservationByUserId(userId: number) {
+        const conservation = await this.prisma.conversation.findMany({
             where: {
                 OR:
                     [
@@ -51,7 +57,30 @@ export class ConversationRepository {
             }, include: {
                 buyer: true,
                 post : true,
-                seller: true
+                seller: true,
+                messages: {
+                    orderBy: { createdAt : 'desc'},
+                    take: 1
+                }
+            }
+        })
+
+        const sorted = conservation.sort((a, b) => {
+            const aTime = a.messages[0]?.createdAt?.getTime() ?? 0;
+            const bTime = b.messages[0]?.createdAt?.getTime() ?? 0;
+            return bTime - aTime;
+        })
+
+        return sorted.map((conv) => {
+            const isBuyer = conv.buyerId === userId;
+            const partner = isBuyer ? conv.seller : conv.buyer;
+
+            return{
+                id: conv.id,
+                postId: conv.postId,
+                postTitle: conv.post.title,
+                partner,
+                lastMessage: conv.messages[0] ?? null
             }
         })
     }

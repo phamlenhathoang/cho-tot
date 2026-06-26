@@ -21,6 +21,6 @@ import { ChatGateway } from './chat.gateway';
   ],
   controllers: [ChatController],
   providers: [ChatService, ChatGatewayOrther, ChatRepo, WsJwtGuard, ChatGateway],
-  exports:[ChatService]
+  exports:[ChatService, ChatRepo]
 })
 export class ChatModule {}

@@ -58,6 +58,11 @@ export class ChatService {
         const receiverId =
             conversation.buyerId === senderId ? conversation.sellerId : conversation.buyerId;
 
-        return { message, receiverId };
+        const conversationId = conversation.id    
+        return { message, receiverId, conversationId};
+    }
+
+    async markAsRead(conversationId: number, userId: number){
+        return await this.chatRepo.markAsRead(conversationId, userId)
     }
 }

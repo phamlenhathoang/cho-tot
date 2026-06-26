@@ -8,6 +8,6 @@ import { ChatModule } from '../chat/chat.module';
   imports:[forwardRef(() => ChatModule)],
   controllers: [ConversationController],
   providers: [ConversationService, ConversationRepository],
-  exports:[ConversationRepository]
+  exports:[ConversationRepository, ConversationService]
 })
 export class ConversationModule {}

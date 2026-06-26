@@ -1,3 +1,4 @@
+
 import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { ConversationService } from './conversation.service';
 import { CreateConversationDto } from './dto/create-conversation';
@@ -8,15 +9,21 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 export class ConversationController {
-  constructor(private readonly conversationService: ConversationService) {}
+    constructor(private readonly conversationService: ConversationService) { }
 
-  @Post()
-  async createConservation(@Body() dto: CreateConversationDto, @Req() req){
-      return await this.conversationService.createOrGetConversation(dto, req.user.id)
-  }
+    @Post()
+    async createConservation(@Body() dto: CreateConversationDto, @Req() req) {
+        return await this.conversationService.createOrGetConversation(dto, req.user.id)
+    }
 
-  @Get(':id')
-  async getConversation(@Req() rq, @Param('id') id: number){
-      return await this.conversationService.getConversationById(id, rq.user.id)
-  }
+    @Get(':id')
+    async getConversationById(@Req() rq, @Param('id') id: number) {
+        return await this.conversationService.getConversationById(id, rq.user.id)
+    }
+
+    @Get()
+    async getAllConversationByUserId(@Req() rq){
+        return await this.conversationService.getAllConversationByUserId(rq.user.id)
+    }
 }
+

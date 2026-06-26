@@ -1,3 +1,5 @@
+
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -83,6 +85,7 @@ model Message {
 
   content         String
 
+  isRead          Boolean   @default(false)
   createdAt       DateTime @default(now())
   sender  User @relation(fields:[senderId], references:[id])
 
@@ -210,3 +213,5 @@ model Offer{
   price  Decimal        @db.Decimal(18, 2)
   createAt DateTime @default(now())
 }
+
+

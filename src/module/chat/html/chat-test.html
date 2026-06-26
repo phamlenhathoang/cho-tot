@@ -128,6 +128,48 @@
   .log .err { color: #f87171; }
   .log .info { color: #60a5fa; }
   small.hint { color: #8a8d91; display: block; margin-top: -6px; margin-bottom: 10px; }
+
+  /* ---- Conversation list panel (mới) ---- */
+  .conv-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .conv-item {
+    border: 1px solid #e4e6eb;
+    border-radius: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .conv-item:hover { background: #f2f3f5; }
+  .conv-item.active { border-color: #1877f2; background: #eef4ff; }
+  .conv-item .top-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .conv-item .post-title {
+    font-size: 12px;
+    color: #8a8d91;
+    margin-top: 2px;
+  }
+  .conv-item .last-msg {
+    font-size: 12.5px;
+    color: #65676b;
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .conv-empty {
+    font-size: 13px;
+    color: #8a8d91;
+    padding: 10px 0;
+  }
 </style>
 </head>
 <body>
@@ -152,6 +194,13 @@
       </div>
       <button onclick="login('A')">Đăng nhập</button>
       <span id="statusA" class="status-line"><span class="status offline"></span>Chưa đăng nhập</span>
+    </div>
+
+    <!-- MỚI: panel danh sách conversation -->
+    <div class="panel">
+      <h2>📋 Danh sách Conversations (A)</h2>
+      <button class="secondary" onclick="loadConversationList('A')">Load All Conversations</button>
+      <div class="conv-list" id="convListA"></div>
     </div>
 
     <div class="panel">
@@ -187,11 +236,18 @@
       <span id="statusB" class="status-line"><span class="status offline"></span>Chưa đăng nhập</span>
     </div>
 
+    <!-- MỚI: panel danh sách conversation -->
+    <div class="panel">
+      <h2>📋 Danh sách Conversations (B)</h2>
+      <button class="secondary" onclick="loadConversationList('B')">Load All Conversations</button>
+      <div class="conv-list" id="convListB"></div>
+    </div>
+
     <div class="panel">
       <h2>Mở conversation đã có (Seller phía)</h2>
-      <small class="hint">Seller không tự tạo conversation — chỉ xem lại conversation mà buyer đã tạo. Copy conversationId từ cột A (sau khi A bấm "Chat with Seller") dán vào đây.</small>
+      <small class="hint">Có thể bấm 1 item trong "Danh sách Conversations" ở trên (sẽ tự điền ô dưới), hoặc dán conversationId tay như cũ.</small>
       <label>Conversation ID</label>
-      <input id="convIdB" placeholder="dán conversationId từ cột A" />
+      <input id="convIdB" placeholder="dán conversationId, hoặc bấm vào 1 item ở trên" />
       <button onclick="openExistingConversation('B')">Mở chat (lấy lịch sử)</button>
       <button class="secondary" onclick="connectSocket('B')">Connect WebSocket</button>
       <div class="status-line" id="convStatusB"></div>
@@ -261,8 +317,19 @@
       const token = json.data.accessToken;
       const payload = decodeJwt(token);
 
+      // MỚI: nếu đang có socket cũ (connect với token của user trước), disconnect nó.
+      // Tránh tình trạng đăng nhập lại bằng tài khoản khác nhưng socket vẫn mang
+      // client.data.userId cũ (server chỉ verify token 1 lần lúc connect, không tự cập nhật).
+      if (state[who].socket) {
+        state[who].socket.disconnect();
+        state[who].socket = null;
+        log(`User ${who}: socket cũ đã bị disconnect do đăng nhập lại tài khoản khác`, 'info');
+      }
+
       state[who].token = token;
       state[who].userId = payload?.sub; // JWT payload dùng field "sub" làm userId
+      state[who].conversationId = null; // MỚI: reset luôn conversation đang mở của tài khoản cũ
+      state[who].otherUserId = null;
 
       document.getElementById('status' + who).innerHTML =
         `<span class="status online"></span>Đã đăng nhập — userId: <b>${state[who].userId}</b>`;
@@ -273,6 +340,94 @@
       document.getElementById('status' + who).innerHTML =
         `<span class="status offline"></span>Lỗi: ${err.message}`;
     }
+  }
+
+  // ---------- MỚI: LOAD DANH SÁCH CONVERSATIONS (getAllConversationByUserId) ----------
+  async function loadConversationList(who) {
+    if (!state[who].token) {
+      log(`User ${who} chưa đăng nhập`, 'err');
+      return;
+    }
+
+    const listEl = document.getElementById('convList' + who);
+
+    try {
+      const res = await fetch(`${apiBase()}/conversation`, {
+        headers: { Authorization: `Bearer ${state[who].token}` },
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || 'Không lấy được danh sách conversation');
+
+      // Controller trả thẳng array, nhưng phòng trường hợp có interceptor bọc { data: [...] }
+      const conversations = Array.isArray(json) ? json : (json.data || []);
+
+      listEl.innerHTML = '';
+
+      if (conversations.length === 0) {
+        listEl.innerHTML = `<div class="conv-empty">Chưa có conversation nào.</div>`;
+        log(`User ${who}: danh sách conversation rỗng`, 'info');
+        return;
+      }
+
+      conversations.forEach((conv) => {
+        const item = document.createElement('div');
+        item.className = 'conv-item';
+        if (String(conv.id) === String(state[who].conversationId)) {
+          item.classList.add('active');
+        }
+
+        const partnerName = conv.partner?.name || conv.partner?.email || `User #${conv.partner?.id ?? '?'}`;
+        const lastMsgText = conv.lastMessage
+          ? escapeHtml(conv.lastMessage.content)
+          : '(chưa có tin nhắn)';
+
+        item.innerHTML = `
+          <div class="top-line">
+            <span>${escapeHtml(partnerName)}</span>
+            <span style="color:#8a8d91;font-weight:400;">#${conv.id}</span>
+          </div>
+          <div class="post-title">📦 ${escapeHtml(conv.postTitle || '')}</div>
+          <div class="last-msg">${lastMsgText}</div>
+        `;
+
+        // Bấm vào item -> tự điền conversationId + mở chat (lấy lịch sử) + join room
+        item.onclick = () => selectConversationFromList(who, conv.id);
+
+        listEl.appendChild(item);
+      });
+
+      log(`User ${who}: tải ${conversations.length} conversation`, 'info');
+    } catch (err) {
+      log(`Lỗi tải danh sách conversation (User ${who}): ${err.message}`, 'err');
+      listEl.innerHTML = `<div class="conv-empty">❌ ${err.message}</div>`;
+    }
+  }
+
+  // Khi bấm vào 1 item trong danh sách: dùng lại đúng flow "mở conversation đã có"
+  // để không lặp code (vẫn gọi loadMessages + joinConversation như openExistingConversation)
+  async function selectConversationFromList(who, conversationId) {
+    const input = document.getElementById('convId' + who);
+    if (input) input.value = conversationId; // giữ đồng bộ với ô input cũ, không bắt buộc nhưng tiện debug
+
+    state[who].conversationId = conversationId;
+    document.getElementById('convStatus' + who).innerHTML = `✅ conversationId: <b>${conversationId}</b>`;
+
+    // Đánh dấu item đang chọn trong list (UI)
+    document.querySelectorAll(`#convList${who} .conv-item`).forEach((el) => el.classList.remove('active'));
+
+    await loadMessages(who);
+    joinConversationRoom(who, conversationId);
+  }
+
+  // ---------- MỚI: JOIN ROOM conversation:{id} qua socket ----------
+  function joinConversationRoom(who, conversationId) {
+    const socket = state[who].socket;
+    if (!socket || !socket.connected) {
+      log(`User ${who}: socket chưa connect, chưa thể joinConversation (sẽ không nhận realtime trong room này)`, 'err');
+      return;
+    }
+    socket.emit('joinConversation', { conversationId });
+    log(`User ${who}: gửi yêu cầu joinConversation (id=${conversationId})`, 'info');
   }
 
   // ---------- SELLER MỞ CONVERSATION ĐÃ CÓ (không tạo mới) ----------
@@ -292,6 +447,7 @@
     document.getElementById('convStatus' + who).innerHTML = `✅ conversationId: <b>${convId}</b>`;
 
     await loadMessages(who);
+    joinConversationRoom(who, convId); // MỚI: join room ngay sau khi có conversationId
   }
 
   // ---------- TẠO / LẤY CONVERSATION ----------
@@ -342,6 +498,7 @@
 
       // load lịch sử chat ngay sau khi có conversationId
       await loadMessages(who);
+      joinConversationRoom(who, conversation.id); // MỚI: join room ngay sau khi có conversationId
     } catch (err) {
       log(`Lỗi tạo conversation (User ${who}): ${err.message}`, 'err');
       document.getElementById('convStatus' + who).innerHTML = `❌ ${err.message}`;
@@ -389,7 +546,7 @@
 
   function escapeHtml(str) {
     const div = document.createElement('div');
-    div.textContent = str;
+    div.textContent = str ?? '';
     return div.innerHTML;
   }
 
@@ -411,6 +568,17 @@
 
     socket.on('connect', () => {
       log(`User ${who}: WebSocket connected (socket.id=${socket.id})`, 'info');
+
+      // MỚI: nếu đã có conversationId từ trước khi connect (ví dụ bấm Connect WebSocket sau),
+      // tự join lại room conversation luôn cho đồng bộ
+      if (state[who].conversationId) {
+        joinConversationRoom(who, state[who].conversationId);
+
+        // MỚI: socket chỉ truyền tin realtime từ lúc connect về sau, không "phát lại" tin đã lỡ.
+        // Nên phải load lại lịch sử từ REST để đồng bộ khung chat (phòng trường hợp có tin nhắn
+        // mới gửi tới trong lúc socket chưa connect).
+        loadMessages(who);
+      }
     });
 
     socket.on('disconnect', () => {
@@ -435,6 +603,22 @@
 
     socket.on('messageError', (err) => {
       log(`User ${who}: messageError — ${err.error}`, 'err');
+    });
+
+    // MỚI: phản hồi của joinConversation
+    socket.on('joinedConversation', (data) => {
+      log(`User ${who}: đã join room conversation:${data.conversationId}`, 'info');
+    });
+
+    socket.on('joinConversationError', (err) => {
+      log(`User ${who}: joinConversationError — ${err.error}`, 'err');
+    });
+
+    // MỚI: cập nhật danh sách conversation realtime (sidebar)
+    socket.on('conversationUpdated', (data) => {
+      log(`User ${who}: nhận conversationUpdated — conversationId=${data.conversationId}, lastMessage="${data.lastMessage?.content}"`, 'info');
+      // tự load lại list cho đơn giản (không tối ưu, nhưng đủ để test)
+      loadConversationList(who);
     });
 
     state[who].socket = socket;
