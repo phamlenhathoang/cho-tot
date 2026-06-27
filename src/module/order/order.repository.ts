@@ -109,4 +109,15 @@ export class OrderRepository {
             }
         })
     }
+
+    async updateStatusOrder(id: number, status: OrderStatus){
+        return await this.prismaService.order.update({
+            where: {
+                id: id
+            },
+            data: {
+                orderStatus : status
+            }
+        })
+    }
 }

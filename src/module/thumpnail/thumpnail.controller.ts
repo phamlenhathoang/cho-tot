@@ -60,7 +60,6 @@ export class ThumpnailController {
     @Req() req: any,
     @Query('id') id: number
   ) {
-
     return this.thumpnailService.update(id, file)
   }
 }

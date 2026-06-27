@@ -42,10 +42,10 @@ export class ThumbnaiRepo {
 
     async addImages(urls: any, postId: number) {
         return await this.prismaService.image.createMany({
-            data: urls.map((url, publicId) => ({
-                url,
+            data: urls.map((image) => ({
+                url: image.url,
                 postId: postId,
-                publisId: publicId
+                publisId: image.publicId
             })),
         });
     }

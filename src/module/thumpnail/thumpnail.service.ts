@@ -1,16 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ThumbnaiRepo } from './thumbnail.repository';
 import { CloudnaryService } from '../cloudnary/cloudnary.service';
+import { PostService } from '../post/post.service';
 
 @Injectable()
 export class ThumpnailService {
 
     constructor(
         private readonly thumbnailRepo: ThumbnaiRepo,
-        private readonly cloudinaryService: CloudnaryService
+        private readonly cloudinaryService: CloudnaryService,
+        private readonly postService: PostService
     ) { }
 
     async saveImages(postId: number, files: any) {
+        const post = await this.postService.GetById(postId);
+        if(!post){
+            throw new NotFoundException("Post does not exist");
+        }
         const urls = await this.cloudinaryService.uploadImages(files);
         if(!urls){
             throw new NotFoundException('Urls does not exist');

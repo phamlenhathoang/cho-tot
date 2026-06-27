@@ -150,6 +150,10 @@ export class OrderService {
                         statusOrderTracking: tracking,
                     })
                 }
+
+                if(status === 'DELIVERED'){
+                    await this.orderRepo.updateStatusOrder(orderId, OrderStatus.COMPLETED);
+                }
                 
                 return await this.orderRepo.getOrder(orderId, user.id);
             }
