@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Put, Query, Req, UseGuards} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { OfferService } from './offer.service';
 import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guards/jwt-auth.guards.guard';
@@ -50,7 +50,15 @@ export class OfferController {
   }
 
   @Get()
-  async getAllOffer(){
+  async getAllOffer() {
     return await this.offerService.getAllOffer()
+  }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CUSTOMER)
+  @Delete(':id')
+  async deleteOffer(@Param('id') id: number, @Req() rq) {
+    return await this.offerService.deleteOfferById(id, rq.user.id)
   }
 }

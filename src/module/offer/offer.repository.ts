@@ -111,4 +111,22 @@ export class OfferRepository {
     async getAllOffer(){
         return await this.prismaService.offer.findMany();
     }
+
+    async getOfferByUserIdAndOfferId(id: number, userId){
+        return await this.prismaService.offer.findFirst({
+            where:{
+                id: id,
+                buyerId: userId,
+                offerStatus: 'PENDING'
+            }
+        })
+    }
+
+    async deleteOffer(id: number){
+        return await this.prismaService.offer.delete({
+            where:{
+                id: id
+            }
+        })
+    }
 }

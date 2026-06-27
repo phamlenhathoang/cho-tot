@@ -92,4 +92,12 @@ export class OfferService {
     async getAllOffer() {
         return await this.offerRepo.getAllOffer();
     }
+
+    async deleteOfferById(id: number, userId: number){
+        const offer = await this.offerRepo.getOfferByUserIdAndOfferId(id, userId);
+        if(!offer){
+            throw new NotFoundException("Offer does not exist or status offer is not PENDING");
+        }
+        return await this.offerRepo.deleteOffer(id);
+    }
 }
