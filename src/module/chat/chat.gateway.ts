@@ -87,7 +87,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
             const receiverIsViewing = this.isUserInConversationRoom(receiverId, conversationId);
             if (receiverIsViewing) {
-                await this.chatService .markAsRead(conversationId, receiverId);
+                await this.chatService.markAsRead(conversationId, receiverId);
                 // (gọi qua chatService, vì chatService đang là nơi xử lý nghiệp vụ message —
                 // nếu bạn đã viết updateMessageIsRead ở ConversationRepository, có thể cần
                 // expose lại qua đúng service tương ứng tuỳ bạn tổ chức module nào)

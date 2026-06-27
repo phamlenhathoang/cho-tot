@@ -136,7 +136,16 @@ export class UserRepo {
             where: {
                 id: userId
             }
-            
+        })
+    }
+
+    async updatePhoneByUserId(id: number, phone: string){
+        return await this.prismaService.user.update({
+            where:{
+                id: id
+            }, data:{
+                phone: phone
+            }
         })
     }
 }

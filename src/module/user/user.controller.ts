@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDTO } from './dto/create.user.dto';
 import { UpdateUserDTO } from './dto/update.user.dto';
@@ -74,5 +74,13 @@ export class UserController {
   @Get('get-user-by-id')
   async getUserById(@Query('id') id: number){
     return await this.userService.getUserById(id);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(Role.CUSTOMER)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Put('update-phone')
+  async updatePhone(@Req() rq, @Query('phone') phone: string) {
+    return this.userService.updatePhoneByUserId(rq.user.id, phone);
   }
 }

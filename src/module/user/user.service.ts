@@ -95,4 +95,8 @@ export class UserService {
     async updatePassword(newPassword: string, id: number){
         return await this.userRepo.updatePassword(newPassword, id);
     }    
+
+    async updatePhoneByUserId(id: number, phone: string){
+        return await this.userRepo.updatePhoneByUserId(id, phone)
+    }
 }
