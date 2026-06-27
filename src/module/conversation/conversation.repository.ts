@@ -7,26 +7,40 @@ export class ConversationRepository {
         private readonly prisma: PrismaService
     ) { }
 
-    async getConversation(postId: number, buyerId: number, sellerId: number) {
+    async getConversation(buyerId: number, sellerId: number) {
         return await this.prisma.conversation.findFirst({
             where: {
-                postId: postId,
-                buyerId: buyerId,
-                sellerId: sellerId
+                OR: [
+                    {
+                        AND: [
+                            { buyerId },
+                            { sellerId }
+                        ]
+                    },
+                    {
+                        AND: [
+                            { buyerId: sellerId },
+                            { sellerId: buyerId }
+                        ]
+                    }
+                ]
+            }, 
+            include:{
+                messages: true
             }
-        })
+        });
     }
 
     async getConversationById(id: number, userId: number) {
         return await this.prisma.conversation.findFirst({
             where: {
                 id: id,
-                OR:[
-                    {buyerId: userId},
-                    {sellerId: userId}
+                OR: [
+                    { buyerId: userId },
+                    { sellerId: userId }
                 ]
-            }, 
-            include :{
+            },
+            include: {
                 messages: {
                     orderBy: {
                         createdAt: 'desc'
@@ -36,10 +50,9 @@ export class ConversationRepository {
         })
     }
 
-    async createConversation(postId: number, buyerId: number, sellerId: number) {
+    async createConversation(buyerId: number, sellerId: number) {
         return await this.prisma.conversation.create({
             data: {
-                postId: postId,
                 buyerId: buyerId,
                 sellerId: sellerId
             }
@@ -47,6 +60,7 @@ export class ConversationRepository {
     }
 
     async getAllConservationByUserId(userId: number) {
+        console.log(userId)
         const conservation = await this.prisma.conversation.findMany({
             where: {
                 OR:
@@ -56,10 +70,9 @@ export class ConversationRepository {
                     ]
             }, include: {
                 buyer: true,
-                post : true,
                 seller: true,
                 messages: {
-                    orderBy: { createdAt : 'desc'},
+                    orderBy: { createdAt: 'desc' },
                     take: 1
                 }
             }
@@ -75,10 +88,8 @@ export class ConversationRepository {
             const isBuyer = conv.buyerId === userId;
             const partner = isBuyer ? conv.seller : conv.buyer;
 
-            return{
+            return {
                 id: conv.id,
-                postId: conv.postId,
-                postTitle: conv.post.title,
                 partner,
                 lastMessage: conv.messages[0] ?? null
             }

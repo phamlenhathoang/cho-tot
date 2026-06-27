@@ -164,24 +164,14 @@ async function main() {
         data: {
             buyerId: admin.id,
             sellerId: customer1.id,
-            postId: post1.id,
-        },
-    });
-
-    const conversation2 = await prisma.conversation.create({
-        data: {
-            buyerId: admin.id,
-            sellerId: customer1.id,
-            postId: post2.id,
         },
     });
 
     // conversation giữa 2 customer
-    const conversation3 = await prisma.conversation.create({
+    const conversation2 = await prisma.conversation.create({
         data: {
             buyerId: customer1.id,
             sellerId: customer2.id,
-            postId: post3.id,
         },
     });
 
@@ -193,45 +183,53 @@ async function main() {
                 conversationId: conversation1.id,
                 senderId: admin.id,
                 content: 'Is this iPhone still available?',
+                isRead: true
             },
             {
                 conversationId: conversation1.id,
                 senderId: customer1.id,
                 content: 'Yes, it is available.',
+                isRead: true
             },
 
             // conversation 2
             {
-                conversationId: conversation2.id,
+                conversationId: conversation1.id,
                 senderId: admin.id,
                 content: 'Can you reduce the price?',
+                isRead: true
             },
             {
-                conversationId: conversation2.id,
+                conversationId: conversation1.id,
                 senderId: customer1.id,
                 content: 'Sure, I can discount a little.',
+                isRead: true
             },
 
             // conversation 3
             {
-                conversationId: conversation3.id,
+                conversationId: conversation2.id,
                 senderId: customer1.id,
                 content: 'Is the MacBook still available?',
+                isRead: true
             },
             {
-                conversationId: conversation3.id,
+                conversationId: conversation2.id,
                 senderId: customer2.id,
                 content: 'Yes, it is still available.',
+                isRead: true
             },
             {
-                conversationId: conversation3.id,
+                conversationId: conversation2.id,
                 senderId: customer1.id,
                 content: 'Can you ship to Ho Chi Minh City?',
+                isRead: true
             },
             {
-                conversationId: conversation3.id,
+                conversationId: conversation2.id,
                 senderId: customer2.id,
                 content: 'Yes, I can.',
+                isRead: true
             },
         ],
     });

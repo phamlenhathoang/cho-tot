@@ -70,8 +70,6 @@ model Conversation {
   sellerId    Int
   seller       User  @relation("SellerConversation", fields: [sellerId], references: [id])
 
-  postId      Int
-  post        Post @relation("PostConversation", fields:[postId], references:[id])
   messages    Message[]
 }
 
@@ -123,7 +121,6 @@ model Post {
   images  Image[]   @relation("ImagePost")
   orders  Order[]   @relation("OrderPost")
   offers  Offer[]   @relation("OfferPost")
-  conversations Conversation[] @relation("PostConversation")
 } 
 
 model Image {

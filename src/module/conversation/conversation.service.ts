@@ -17,9 +17,9 @@ export class ConversationService {
         if(createConversationDto.sellerId ===  buyerId){
             throw new ForbiddenException("Can not create conversation with myself");
         }
-        const conservation = await this.conservationRepository.getConversation(createConversationDto.postId, buyerId, createConversationDto.sellerId);
+        const conservation = await this.conservationRepository.getConversation(buyerId, createConversationDto.sellerId);
         if(!conservation){
-            return await this.conservationRepository.createConversation(createConversationDto.postId, buyerId, createConversationDto.sellerId);
+            return await this.conservationRepository.createConversation(buyerId, createConversationDto.sellerId);
         }
 
         return conservation;
@@ -31,7 +31,6 @@ export class ConversationService {
             throw new NotFoundException('Conversation does not exist');
         }
         const countMessages = await this.chatRepository.countMessageInConversationById(conversation?.id, userId);
-
         if(countMessages){
             await this.chatRepository.markAsRead(conversation.id, userId)
         }
@@ -41,7 +40,6 @@ export class ConversationService {
 
     async getAllConversationByUserId(userId: number){
         return await this.conservationRepository.getAllConservationByUserId(userId)
-        
     }
 }
 
