@@ -61,4 +61,12 @@ export class OfferController {
   async deleteOffer(@Param('id') id: number, @Req() rq) {
     return await this.offerService.deleteOfferById(id, rq.user.id)
   }
+
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.CUSTOMER)
+  @Put('update-price')
+  async updatePriceOffer(@Query('id') id: number, @Query('price') price: number , @Req() rq) {
+    return await this.offerService.updatePriceOffer(id, rq.user.id, price)
+  }
 }

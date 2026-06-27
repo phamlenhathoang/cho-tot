@@ -129,4 +129,16 @@ export class OfferRepository {
             }
         })
     }
+
+    async updatePriceOffer(id: number, price: number, userId: number){
+        return await this.prismaService.offer.update({
+            where:{
+                id: id,
+                buyerId: userId,
+                offerStatus: 'PENDING'
+            },data:{
+                price: price
+            }
+        })
+    }
 }
