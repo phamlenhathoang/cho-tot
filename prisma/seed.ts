@@ -105,7 +105,8 @@ async function main() {
             weight: 5000,
             width: 5,
             length: 15,
-            height: 10
+            height: 10,
+            price: 17000000
         },
     });
 
@@ -118,7 +119,8 @@ async function main() {
             weight: 5000,
             width: 5,
             length: 15,
-            height: 10
+            height: 10,
+            price: 500000
         },
     });
 
@@ -131,7 +133,8 @@ async function main() {
             weight: 10000,
             width: 5,
             length: 15,
-            height: 10
+            height: 10,
+            price: 20000000
         },
     });
 
@@ -139,19 +142,22 @@ async function main() {
     await prisma.image.createMany({
         data: [
             {
-                url: 'https://example.com/iphone.jpg',
+                url: 'http://res.cloudinary.com/dnpjqmvsk/image/upload/v1781693605/chotot/iesptaqueh35kgrvd8ip.webp',
+                publisId: 'chotot/iesptaqueh35kgrvd8ip',
                 description: 'iPhone image',
                 postId: post1.id,
                 isAvatar: true
             },
             {
-                url: 'https://example.com/hoodie.jpg',
+                url: 'https://res.cloudinary.com/dnpjqmvsk/image/upload/v1781693666/chotot/ni5xcidq3rl7g4pfah1f.avif',
+                publisId: 'chotot/ni5xcidq3rl7g4pfah1f',
                 description: 'Nike hoodie image',
                 postId: post2.id,
                 isAvatar: true
             },
             {
-                url: 'https://example.com/macbook.jpg',
+                url: 'https://res.cloudinary.com/dnpjqmvsk/image/upload/v1782535561/chotot/pqckbtu3qwqqnov3vbdp.jpg',
+                publisId: 'chotot/ppgc4lhbo6j832riunwg',
                 description: 'MacBook image',
                 postId: post3.id,
                 isAvatar: true
