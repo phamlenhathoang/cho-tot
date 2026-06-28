@@ -98,7 +98,7 @@ export class OfferService {
         if(!offer){
             throw new NotFoundException("Offer does not exist or status offer is not PENDING");
         }
-        return await this.offerRepo.deleteOffer(id);
+        return await this.offerRepo.deleteOffer(id, userId);
     }
 
     async updatePriceOffer(id: number, userId: number, price: number) {

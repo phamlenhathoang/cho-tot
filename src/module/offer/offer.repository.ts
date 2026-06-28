@@ -122,10 +122,11 @@ export class OfferRepository {
         })
     }
 
-    async deleteOffer(id: number){
+    async deleteOffer(id: number, userId: number){
         return await this.prismaService.offer.delete({
             where:{
-                id: id
+                id: id,
+                buyerId: userId
             }
         })
     }
