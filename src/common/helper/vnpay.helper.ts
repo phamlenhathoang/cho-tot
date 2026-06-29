@@ -33,6 +33,7 @@ export interface CreateVnpayUrlParams {
 
 export function createVnpayPaymentUrl(params: CreateVnpayUrlParams): string {
   const createDate = formatVnpayDate(new Date());
+  const expireDate = formatVnpayDate(new Date(Date.now() + 15 * 60 * 1000));
 
   let vnpParams: Record<string, string | number> = {
     vnp_Version: '2.1.0',
@@ -47,6 +48,7 @@ export function createVnpayPaymentUrl(params: CreateVnpayUrlParams): string {
     vnp_ReturnUrl: params.vnpReturnUrl,
     vnp_IpAddr: params.ipAddr,
     vnp_CreateDate: createDate,
+    vnp_ExpireDate: expireDate
   };
 
   vnpParams = sortObject(vnpParams);
