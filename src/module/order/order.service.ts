@@ -6,10 +6,10 @@ import { PostRepository } from '../post/post.repositosy';
 import { MapService } from '../map/map.service';
 import { GHTKConfig } from '../auth/config/ghtk.config';
 import { UpdateOrderDTO } from './dto/update-order.dto';
-import { OfferStatus, OrderStatus, Prisma, StatusOrderTracking } from '@prisma/client';
+import { OfferStatus, OrderStatus, PaymentStatus, Prisma, StatusOrderTracking } from '@prisma/client';
 import { GhnService } from '../ghn/ghn.service';
 import { TrackingService } from '../tracking/tracking.service';
-import { TransactionService } from '../transaction/tracsaction.service';
+import { TransactionTrackingService } from '../transaction-tracking/tracsaction-tracking.service';
 import { OfferRepository } from '../offer/offer.repository';
 import { mapGhnStatusToEnum } from 'src/common/helper/mapper-status-order-tracking';
 
@@ -23,7 +23,7 @@ export class OrderService {
         private readonly ghtkConfig: GHTKConfig,
         private readonly ghnService: GhnService,
         private readonly trackingService: TrackingService,
-        private readonly transactionService: TransactionService,
+        private readonly transactionService: TransactionTrackingService,
         private readonly offerRepo: OfferRepository
     ) { }
 
@@ -117,6 +117,8 @@ export class OrderService {
                             return updatedOrder;
                         }
                     )
+
+                    break;
                 default:
                     throw new Error("Invalid status");
             }
@@ -179,5 +181,13 @@ export class OrderService {
 
     async getAll(){
         return await this.orderRepo.getAll()
+    }
+
+    async updateReleaseAt(id: number, autoReleaseAt: Date, tx ?: Prisma.TransactionClient){
+        return await this.orderRepo.updateReleaseAt(id, autoReleaseAt, tx);
+    }
+    
+    async updateStatusOrder(id: number, paymentStatus: PaymentStatus, releaseAt: Date, orderStatus: OrderStatus){
+        return await this.orderRepo.updateStatusOrderPayment(id, paymentStatus, releaseAt, orderStatus)
     }
 }

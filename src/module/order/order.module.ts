@@ -9,7 +9,7 @@ import { GHTKConfig } from '../auth/config/ghtk.config';
 import { HttpModule } from '@nestjs/axios';
 import { GhnModule } from '../ghn/ghn.module';
 import { TrackingModule } from '../tracking/tracking.module';
-import { TransactionService } from '../transaction/tracsaction.service';
+import { TransactionTrackingService } from '../transaction-tracking/tracsaction-tracking.service';
 import { OfferModule } from '../offer/offer.module';
 
 @Module({
@@ -19,7 +19,7 @@ import { OfferModule } from '../offer/offer.module';
     forwardRef(() => GhnModule)
   ],
   controllers: [OrderController],
-  providers: [OrderService, OrderRepository, GHTKConfig, TransactionService],
+  providers: [OrderService, OrderRepository, GHTKConfig, TransactionTrackingService],
   exports: [OrderService, OrderRepository]
 })
 export class OrderModule {}

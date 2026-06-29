@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { OfferRepository } from './offer.repository';
-import { TransactionService } from '../transaction/tracsaction.service';
+import { TransactionTrackingService } from '../transaction-tracking/tracsaction-tracking.service';
 import { OrderService } from '../order/order.service';
 import { PostService } from '../post/post.service';
 import { OfferDTO } from './dto/offer.dto';
@@ -11,7 +11,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 export class OfferService {
     constructor(
         private readonly offerRepo: OfferRepository,
-        private readonly transactionService: TransactionService,
+        private readonly transactionService: TransactionTrackingService,
         private readonly orderService: OrderService,
         private readonly postService: PostService,
         private readonly ghnService: GhnService

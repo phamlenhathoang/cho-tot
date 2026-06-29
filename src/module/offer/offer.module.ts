@@ -5,7 +5,7 @@ import { OfferGateway } from '../auth/config/offer-gateway.config';
 import { WsJwtGuard } from '../auth/guards/ws-jwt/ws-jwt.guard';
 import { JwtModule } from '@nestjs/jwt';
 import { OfferRepository } from './offer.repository';
-import { TransactionService } from '../transaction/tracsaction.service';
+import { TransactionTrackingService } from '../transaction-tracking/tracsaction-tracking.service';
 import { OrderModule } from '../order/order.module';
 import { PostModule } from '../post/post.module';
 import { GhnModule } from '../ghn/ghn.module';
@@ -19,7 +19,7 @@ import { GhnModule } from '../ghn/ghn.module';
     PostModule, GhnModule
   ],
   controllers: [OfferController],
-  providers: [OfferService, OfferGateway, WsJwtGuard, OfferRepository, TransactionService],
+  providers: [OfferService, OfferGateway, WsJwtGuard, OfferRepository, TransactionTrackingService],
   exports: [OfferService, OfferRepository]
 })
 export class OfferModule { }

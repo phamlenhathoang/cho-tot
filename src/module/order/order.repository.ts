@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { OrderStatus, Prisma } from "@prisma/client";
+import { OrderStatus, PaymentStatus, Prisma } from "@prisma/client";
 import { PrismaService } from "src/prisma/prisma.service";
 
 @Injectable()
@@ -18,18 +18,18 @@ export class OrderRepository {
                 id: orderId,
                 buyerId: userId
             },
-            include:{
+            include: {
                 buyer: {
-                    include:{
+                    include: {
                         addresss: true
                     }
                 },
                 post: {
-                    include:{
+                    include: {
                         category: true,
                         offers: true,
-                        author:{
-                            include:{
+                        author: {
+                            include: {
                                 addresss: true
                             }
                         }
@@ -65,7 +65,7 @@ export class OrderRepository {
                     }
                 ]
             },
-            include:{
+            include: {
                 post: true,
                 trackings: {
                     orderBy: {
@@ -88,9 +88,9 @@ export class OrderRepository {
         return await this.prismaService.order.findMany({
             where: {
                 postId: postId,
-                OR:[
-                    {sellerId: userId},
-                    {buyerId: userId}
+                OR: [
+                    { sellerId: userId },
+                    { buyerId: userId }
                 ]
             }, include: {
                 post: true,
@@ -98,25 +98,52 @@ export class OrderRepository {
         })
     }
 
-    async getAll(){
+    async getAll() {
         return await this.prismaService.order.findMany()
     }
 
-    async getOrderByCodeId(codeId: string){
+    async getOrderByCodeId(codeId: string) {
         return await this.prismaService.order.findFirst({
-            where:{
+            where: {
                 codeId: codeId
             }
         })
     }
 
-    async updateStatusOrder(id: number, status: OrderStatus){
+    async updateStatusOrder(id: number, status: OrderStatus) {
         return await this.prismaService.order.update({
             where: {
                 id: id
             },
             data: {
-                orderStatus : status
+                orderStatus: status
+            }
+        })
+    }
+
+    async updateReleaseAt(id: number, autoReleaseAt: Date, tx?: Prisma.TransactionClient) {
+        const prisma = tx || this.prismaService
+        return await prisma.order.update({
+            where: {
+                id: id
+            },
+            data: {
+                autoReleaseAt: autoReleaseAt,
+                paymentStatus: 'PAID',
+                paidAt: new Date()
+            }
+        })
+    }
+
+    async updateStatusOrderPayment(id: number, paymentStatus: PaymentStatus, releaseAt: Date, orderStatus: OrderStatus) {
+        return await this.prismaService.order.update({
+            where:{
+                id: id
+            },
+            data:{
+                paymentStatus: paymentStatus,
+                releasedAt: releaseAt,
+                orderStatus: orderStatus
             }
         })
     }

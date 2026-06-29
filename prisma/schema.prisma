@@ -144,6 +144,18 @@ enum OrderStatus {
   COMPLETED
 }
 
+enum PaymentStatus{
+  UNPAID
+  PAID
+  RELEASED
+  REFUND
+}
+
+enum PaymentMethod{
+  COD
+  BANKING
+}
+
 model Order{
   id  Int @id @default(autoincrement())
 
@@ -163,8 +175,41 @@ model Order{
   orderStatus OrderStatus @default(PENDING)
   shipFee Decimal? @default(0)    @db.Decimal(18, 2)
   totalAmount  Decimal?       @db.Decimal(18, 2)
+
+  paymentMethod   PaymentMethod  @default(COD) 
+  paymentStatus   PaymentStatus? @default(UNPAID)
+
+  paidAt          DateTime?
+  releasedAt      DateTime?
+  autoReleaseAt   DateTime? 
   createdAt DateTime @default(now())
+
   trackings    OrderTracking[]  @relation("TrackingOrder")
+  transactions    Transaction[]   @relation("OrderTransactions")
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model Transaction {
+  id                Int               @id @default(autoincrement())
+
+  orderId           Int
+  order             Order             @relation("OrderTransactions", fields: [orderId], references: [id])
+
+  vnpTxnRef         String            @unique   // mã giao dịch tự sinh, gửi cho VNPay
+  vnpTransactionNo  String?                     // mã giao dịch VNPay trả về (sau khi thành công)
+  amount            Int                         // đơn vị: VND (số nguyên, KHÔNG x100 — chỉ x100 lúc tạo URL)
+  status            TransactionStatus @default(PENDING)
+  bankCode          String?
+  payDate           String?                     // vnp_PayDate dạng yyyyMMddHHmmss, lưu raw string
+  rawIpnResponse    Json?                       // lưu nguyên response IPN để debug/audit
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 }
 
 enum StatusOrderTracking{
