@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, Param, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guards/jwt-auth.guards.guard';
@@ -14,7 +14,7 @@ export class PaymentController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.CUSTOMER)
   @Post('vnpay/create/:orderId')
-  async createPayment(@Param('orderId') orderId: string, @Req() req){
+  async createPayment(@Param('orderId') orderId: string, @Req() req) {
     const ipAddr = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.socket.remoteAddress || '127.0.0.1'
     const paymentUrl = await this.paymentService.createPaymentUrl(Number(orderId), ipAddr, req.user.id);
     return { paymentUrl };
@@ -28,15 +28,20 @@ export class PaymentController {
   }
 
   @Get('vnpay/return')
-  async handleReturn(@Req() req, @Res() res) {
-    const isSuccess = req.query['vnp_ResponseCode'] === '00';
-    const frontendUrl = isSuccess
-      ? `${process.env.FRONTEND_URL}/payment/success`
-      : `${process.env.FRONTEND_URL}/payment/failed`;
- 
-    return res.redirect(frontendUrl);
+  async vnpayReturn(@Query() query: any) {
+    return query; // tạm thời để xem raw response, sau verify checksum như IPN
   }
- 
+
+  // @Get('vnpay/return')
+  // async handleReturn(@Req() req, @Res() res) {
+  //   const isSuccess = req.query['vnp_ResponseCode'] === '00';
+  //   const frontendUrl = isSuccess
+  //     ? `${process.env.FRONTEND_URL}/payment/success`
+  //     : `${process.env.FRONTEND_URL}/payment/failed`;
+
+  //   return res.redirect(frontendUrl);
+  // }
+
   /**
    * Buyer xác nhận đã nhận hàng -> release tiền (mock, xem comment trong service).
    * TODO: thay buyerId hardcode bằng @CurrentUser() khi đã gắn JWT guard.
