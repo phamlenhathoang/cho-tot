@@ -10,13 +10,12 @@ import * as qs from 'qs';
  * VNPay yêu cầu sort các param theo alphabet TRƯỚC KHI build query string
  * để tính chữ ký -> sai thứ tự sẽ ra checksum sai (rất dễ debug nhầm chỗ này).
  */
-export function sortObject(obj: Record<string, string | number>) {
-  const sorted: Record<string, string> = {};
-  const keys = Object.keys(obj).sort();
-  for (const key of keys) {
-    // VNPay encode space thành "+" (không dùng %20)
-    sorted[key] = encodeURIComponent(String(obj[key])).replace(/%20/g, '+');
-  }
+function sortObject(obj) {
+  let sorted = {};
+  let keys = Object.keys(obj).sort();
+  keys.forEach(key => {
+    sorted[key] = encodeURIComponent(obj[key]).replace(/%20/g, '+');
+  });
   return sorted;
 }
 
