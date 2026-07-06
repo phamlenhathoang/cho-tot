@@ -21,7 +21,7 @@ export class UpdateOrderDTO {
     orderStatus !: OrderStatus;
 
     @ApiProperty({
-        example: 'COD, BANK',
+        example: 'COD, BANKING',
         description: 'Payment method'
     })
     @IsEnum(PaymentMethod)

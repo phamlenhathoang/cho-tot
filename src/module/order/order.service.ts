@@ -13,6 +13,7 @@ import { TransactionTrackingService } from '../transaction-tracking/tracsaction-
 import { OfferRepository } from '../offer/offer.repository';
 import { mapGhnStatusToEnum } from 'src/common/helper/mapper-status-order-tracking';
 import { PaymentService } from '../payment/payment.service';
+import { TransactionService } from '../transaction/transaction.service';
 
 @Injectable()
 export class OrderService {
@@ -24,10 +25,11 @@ export class OrderService {
         private readonly ghtkConfig: GHTKConfig,
         private readonly ghnService: GhnService,
         private readonly trackingService: TrackingService,
-        private readonly transactionService: TransactionTrackingService,
+        private readonly transactionTrackingService: TransactionTrackingService,
         private readonly offerRepo: OfferRepository,
         @Inject(forwardRef(() => PaymentService))
-        private readonly paymentService: PaymentService
+        private readonly paymentService: PaymentService,
+        private readonly transactionService: TransactionService
     ) { }
 
     async createOrder(offer: any, tx: Prisma.TransactionClient, serviceId: number, totalShipFee: any) {
@@ -108,8 +110,9 @@ export class OrderService {
                         await this.paymentService.createPaymentPayOsUrl(order)
                     }
 
-                    return await this.orderRepo.updateOrder(order.id, codeId, updateOrderDto.orderStatus)
+                    await this.orderRepo.updateOrder(order.id, codeId, updateOrderDto.orderStatus)
 
+                    return await this.orderRepo.getOrderById(updateOrderDto.orderId, user.id);
                     break;
 
                 case OrderStatus.CANCELED:
@@ -117,7 +120,7 @@ export class OrderService {
                         throw new BadRequestException("Order must be pending status");
                     }
 
-                    return await this.transactionService.execute(
+                    return await this.transactionTrackingService.execute(
                         async (tx) => {
                             const updatedOrder = await this.orderRepo.updateOrder(order.id, updateOrderDto.orderStatus, tx);
                             await this.offerRepo.updateOffer(order.post.offers.find(o => o.buyerId === order.buyerId && o.postId === order.postId)?.id!, OfferStatus.CANCELED, tx);
@@ -160,7 +163,7 @@ export class OrderService {
                     })
                 }
 
-                return await this.transactionService.execute(
+                return await this.transactionTrackingService.execute(
                     async (tx) => {
                         var orderStatus 
                         if (status === 'DELIVERED') {
@@ -208,7 +211,17 @@ export class OrderService {
     }
 
     async markAsPaid(id: number) {
-        return await this.orderRepo.markAsPaid
+        return await this.transactionTrackingService.execute(
+            async (tx) => {
+                await this.orderRepo.markAsPaid(id, tx);
+                await this.transactionService.updateTransaction(id, 
+                    { status: 'PAID',
+                     paidAt: new Date(),
+                     releasedAt: new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000),
+                     autoReleaseAt: new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000) },
+                    tx);
+            }
+        )
     }
 
     async updateOrderById(id: number, data: any) {

@@ -9,15 +9,15 @@ export class TransactionService {
         private readonly transactionRepository: TransactionRepository
     ){}
 
-    async createTransaction(orderId: number, vnpTxnRef: string, amount: number, status: TransactionStatus){
-        return await this.transactionRepository.createTransaction(orderId, vnpTxnRef, amount, status)
+    async createTransaction(data: any){
+        return await this.transactionRepository.createTransaction(data)
     }
 
-    async getTransaction(vnpTxnRef: string){
-        return this.transactionRepository.getTransaction(vnpTxnRef)
+    async getTransaction(orderCode: string){
+        return this.transactionRepository.getTransaction(orderCode)
     }
 
-    async updateTransaction(id: number, status: TransactionStatus, vnpTransactionNo: string, bankCode: string, paydate: string, rawIpnResponse: any, tx?: Prisma.TransactionClient){
-        return await this.transactionRepository.updateTransaction(id, status, vnpTransactionNo, bankCode, paydate, rawIpnResponse, tx);
+    async updateTransaction(transactionId: number, data: any, tx?: Prisma.TransactionClient){
+        return await this.transactionRepository.updateTransaction(transactionId, data, tx);
     }
 }

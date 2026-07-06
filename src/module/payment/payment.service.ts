@@ -43,89 +43,6 @@ export class PaymentService {
             })
     }
 
-    async createPaymentUrl(orderId: number, ipAddr: string, userId: number) {
-        const order = await this.orderService.getOrderById(orderId, userId);
-        if (!order) {
-            throw new NotFoundException(`Order ${orderId} không tồn tại`);
-        }
-        if (!order.totalAmount) {
-            throw new Error(`Order ${orderId} chưa có totalAmount`);
-        }
-
-        const txnRef = `ORDER${orderId}_${Date.now()}`
-        const amount = Math.round(Number(order.totalAmount))
-
-        // await this.transactionService.createTransaction(order.id, txnRef, amount, 'PENDING')
-
-        return createVnpayPaymentUrl({
-            vnpTmnCode: this.vnpayConfig.getTmnCode(),
-            vnpHashSecret: this.vnpayConfig.getHashSecret(),
-            vnpUrl: this.vnpayConfig.getUrl(),
-            vnpReturnUrl: this.vnpayConfig.getReturnUrl(),
-            txnRef,
-            amount,
-            orderInfo: `Thanh toan don hang ${order.id}`,
-            ipAddr,
-        });
-    }
-
-    async handleIpn(query: Record<string, string>) {
-        const { isValid } = verifyVnpayChecksum({ vnpHashSecret: this.vnpayConfig.getHashSecret(), query })
-        if (!isValid) {
-            console.log(this.vnpayConfig.getHashSecret())
-            this.logger.warn(`IPN checksum wrong, txnRef=${query['vnp_TxnRef']}`)
-            return { RspCode: '97', Message: 'Invalid signature' }
-        }
-
-        const txnRef = query['vnp_TxnRef'];
-        const transaction = await this.transactionService.getTransaction(txnRef)
-
-        if (!transaction) {
-            this.logger.warn(`IPN do not found transaction txnRef=${txnRef}`)
-            return { RspCode: '01', Message: 'Order do not found' }
-        }
-
-        if (transaction.status !== 'PENDING') {
-            this.logger.warn(`IPN txpRef=${txnRef} must be PENDING status, skip`)
-            return { RspCode: '02', Message: 'Order already confirmed' }
-        }
-
-        const vnpAmount = Number(query['vnpAmount']) / 100
-        if (vnpAmount !== transaction.amount) {
-            this.logger.warn(`Amount IPN wrong txpRef=${txnRef}, expected=${transaction.amount}, got=${vnpAmount}`)
-            return { RspCode: '04', Message: 'Invalid amount' }
-        }
-
-        const isPaymentSuccess = query['vnp_ResponseCode'] === '00'
-
-        this.transactionTrackingService.execute(
-            async (tx) => {
-                await this.transactionService.updateTransaction(transaction.id, isPaymentSuccess ? 'SUCCESS' : 'FAILED', query['vnp_TransactionNo'], query['vnp_BankCode'], query['vnp_PayDate'], query)
-
-                if (isPaymentSuccess) {
-                    const autoRealeaseAt = new Date();
-                    autoRealeaseAt.setDate(autoRealeaseAt.getDate() + 3)
-
-                    await this.orderService.updateReleaseAt(transaction.orderId, autoRealeaseAt, tx)
-                }
-            }
-        )
-    }
-
-    async confirmReceived(orderId: number, buyerId: number) {
-        const order = await this.orderService.getOrderById(orderId, buyerId);
-
-        if (!order) throw new NotFoundException(`Order ${orderId} không tồn tại`);
-        if (order.buyerId !== buyerId) {
-            throw new Error('Chỉ buyer của đơn hàng này mới được xác nhận');
-        }
-        if (order.paymentStatus !== 'PAID') {
-            throw new Error(`Order ${orderId} chưa ở trạng thái PAID, không thể release`);
-        }
-
-        return await this.orderService.updateStatusOrder(order.id, 'RELEASED', new Date(), 'COMPLETED');
-    }
-
     async createPaymentPayOsUrl(order: any) {
 
         if (order.checkoutUrl) {
@@ -152,7 +69,14 @@ export class PaymentService {
             cancelUrl: this.payosConfig.getCancelUrl(),
         });
 
-        await this.orderService.updateOrderById(order.id, { payosOrderCode: orderCode.toString(), checkoutUrl: paymentLink.checkoutUrl, paymentMethod: 'BANKING' })
+        // await this.orderService.updateOrderById(order.id, { payosOrderCode: orderCode.toString(), checkoutUrl: paymentLink.checkoutUrl, paymentMethod: 'BANKING' })
+        await this.transactionService.createTransaction({
+            orderId: order.id,
+            totalAmount: amount,
+            status: 'PENDING',
+            orderCode: orderCode.toString(),
+            urlPayment : paymentLink.checkoutUrl,
+        })
 
         return {
             checkoutUrl: paymentLink.checkoutUrl,
@@ -172,7 +96,18 @@ export class PaymentService {
 
         const { orderCode, code, desc } = webhookData;
 
-        console.log(`Webhook Thu: orderCode=${orderCode}, code=${code}, desc=${desc}`);
+        if (code !== '00') {
+            this.logger.warn(`Payment Thu thất bại orderCode=${orderCode}, code=${code}, desc=${desc}`);
+            return { success: false, message: `Payment Thu thất bại orderCode=${orderCode}, code=${code}, desc=${desc}` };
+        }
+
+        const order = await this.transactionService.getTransaction(orderCode);
+        if (!order) {
+            this.logger.warn(`Payment Thu không tìm thấy orderCode=${orderCode}`);
+            return { success: false, message: `Payment Thu không tìm thấy orderCode=${orderCode}` };
+        }
+
+        await this.orderService.markAsPaid(order.id);
 
         return { success: true };
     }

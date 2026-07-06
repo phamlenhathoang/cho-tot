@@ -127,11 +127,6 @@ CREATE TABLE `Order` (
     `totalAmount` DECIMAL(18, 2) NULL,
     `paymentMethod` ENUM('COD', 'BANKING') NOT NULL DEFAULT 'COD',
     `paymentStatus` ENUM('UNPAID', 'PAID', 'RELEASED', 'REFUND') NULL DEFAULT 'UNPAID',
-    `payosOrderCode` VARCHAR(191) NULL,
-    `checkoutUrl` VARCHAR(191) NULL,
-    `paidAt` DATETIME(3) NULL,
-    `releasedAt` DATETIME(3) NULL,
-    `autoReleaseAt` DATETIME(3) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     UNIQUE INDEX `Order_codeId_key`(`codeId`),
@@ -142,17 +137,17 @@ CREATE TABLE `Order` (
 CREATE TABLE `Transaction` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `orderId` INTEGER NOT NULL,
-    `vnpTxnRef` VARCHAR(191) NOT NULL,
-    `vnpTransactionNo` VARCHAR(191) NULL,
-    `amount` INTEGER NOT NULL,
+    `totalAmount` DECIMAL(18, 2) NULL,
     `status` ENUM('PENDING', 'SUCCESS', 'FAILED') NOT NULL DEFAULT 'PENDING',
-    `bankCode` VARCHAR(191) NULL,
-    `payDate` VARCHAR(191) NULL,
-    `rawIpnResponse` JSON NULL,
+    `orderCode` VARCHAR(191) NOT NULL,
+    `urlPayment` VARCHAR(191) NOT NULL,
+    `paidAt` DATETIME(3) NULL,
+    `releasedAt` DATETIME(3) NULL,
+    `autoReleaseAt` DATETIME(3) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `Transaction_vnpTxnRef_key`(`vnpTxnRef`),
+    UNIQUE INDEX `Transaction_orderId_key`(`orderId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

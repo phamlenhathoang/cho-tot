@@ -11,7 +11,7 @@ import { UserModule } from '../user/user.module';
 import { OrderModule } from '../order/order.module';
 
 @Module({
-  imports: [TransactionModule, UserModule, forwardRef(() => OrderModule)],
+  imports: [TransactionModule, UserModule, forwardRef(() => OrderModule), TransactionModule],
   controllers: [PaymentController],
   providers: [PaymentService, PaymentRepository, VNPAYConfig, TransactionTrackingService, PayosConfig, BkPayosConfig],
   exports: [PaymentService, PaymentRepository]

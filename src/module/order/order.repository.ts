@@ -34,7 +34,8 @@ export class OrderRepository {
                             }
                         }
                     }
-                }
+                },
+                transaction: true
             }
         })
     }
@@ -169,13 +170,14 @@ export class OrderRepository {
         })
     }
 
-    async markAsPaid(id: number) {
-        return await this.prismaService.order.update({
+    async markAsPaid(id: number, tx?: Prisma.TransactionClient) {
+        const prisma = tx || this.prismaService
+        return await prisma.order.update({
             where: {
                 id: id
             }, data: {
                 paymentStatus: 'PAID',
-                paidAt: Date.now().toString(),
+                
             }
         })
     }
@@ -189,4 +191,5 @@ export class OrderRepository {
             data: data
         })
     }
+
 }

@@ -12,9 +12,10 @@ import { TrackingModule } from '../tracking/tracking.module';
 import { TransactionTrackingService } from '../transaction-tracking/tracsaction-tracking.service';
 import { OfferModule } from '../offer/offer.module';
 import { PaymentModule } from '../payment/payment.module';
+import { TransactionModule } from '../transaction/transaction.module';
 
 @Module({
-  imports:[UserModule, PostModule, MapModule, HttpModule, 
+  imports:[UserModule, PostModule, MapModule, HttpModule, TransactionModule,
     forwardRef(() => PaymentModule),
     forwardRef(() => OfferModule),
     forwardRef(() => TrackingModule),

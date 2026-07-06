@@ -197,16 +197,10 @@ model Order{
   paymentMethod   PaymentMethod  @default(COD) 
   paymentStatus   PaymentStatus? @default(UNPAID)
 
-  payosOrderCode String?
-  checkoutUrl String?
-
-  paidAt          DateTime?  //Thời điểm buyer thanh toán thành  công
-  releasedAt      DateTime?  //Thời điểm trả tiền về thành công 
-  autoReleaseAt   DateTime?   //Thời điểm dự kiến hệ thống sẽ thanh toán
   createdAt DateTime @default(now())
 
   trackings    OrderTracking[]  @relation("TrackingOrder")
-  transactions    Transaction[]   @relation("OrderTransactions")
+  transaction    Transaction?   @relation("OrderTransaction")
 }
 
 enum TransactionStatus {
@@ -218,16 +212,18 @@ enum TransactionStatus {
 model Transaction {
   id                Int               @id @default(autoincrement())
 
-  orderId           Int
-  order             Order             @relation("OrderTransactions", fields: [orderId], references: [id])
+  orderId           Int   @unique
+  order             Order             @relation("OrderTransaction", fields: [orderId], references: [id])
 
-  vnpTxnRef         String            @unique   // mã giao dịch tự sinh, gửi cho VNPay
-  vnpTransactionNo  String?                     // mã giao dịch VNPay trả về (sau khi thành công)
-  amount            Int                         // đơn vị: VND (số nguyên, KHÔNG x100 — chỉ x100 lúc tạo URL)
+  totalAmount       Decimal?       @db.Decimal(18, 2)
   status            TransactionStatus @default(PENDING)
-  bankCode          String?
-  payDate           String?                     // vnp_PayDate dạng yyyyMMddHHmmss, lưu raw string
-  rawIpnResponse    Json?                       // lưu nguyên response IPN để debug/audit
+
+  orderCode       String
+  urlPayment      String
+
+  paidAt          DateTime?  //Thời điểm buyer thanh toán thành  công
+  releasedAt      DateTime?  //Thời điểm trả tiền về thành công 
+  autoReleaseAt   DateTime?   //Thời điểm dự kiến hệ thống sẽ thanh toán
 
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt

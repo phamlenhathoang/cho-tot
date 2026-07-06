@@ -13,27 +13,6 @@ export class PaymentController {
 
   constructor(private readonly paymentService: PaymentService) { }
 
-  @ApiBearerAuth('access-token')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.CUSTOMER)
-  @Post('vnpay/create/:orderId')
-  async createPayment(@Param('orderId') orderId: string, @Req() req) {
-    const ipAddr = '127.0.0.1'
-    const paymentUrl = await this.paymentService.createPaymentUrl(Number(orderId), ipAddr, req.user.id);
-    return { paymentUrl };
-  }
-
-  @Get('vnpay/ipn')
-  @HttpCode(200)
-  async handleIpn(@Req() req) {
-    const query = req.query as Record<string, string>;
-    return this.paymentService.handleIpn(query);
-  }
-
-  // @Get('vnpay/return')
-  // async vnpayReturn(@Query() query: any) {
-  //   return query; // tạm thời để xem raw response, sau verify checksum như IPN
-  // }
 
   @Get('vnpay/return')
   async handleReturn(@Req() req, @Res() res) {
@@ -45,15 +24,6 @@ export class PaymentController {
     return res.redirect(frontendUrl);
   }
 
-  /**
-   * Buyer xác nhận đã nhận hàng -> release tiền (mock, xem comment trong service).
-   * TODO: thay buyerId hardcode bằng @CurrentUser() khi đã gắn JWT guard.
-   */
-  @Post('confirm-received/:orderId')
-  async confirmReceived(@Param('orderId') orderId: string) {
-    const buyerId = 1; // TODO: lấy từ JWT token thật
-    return this.paymentService.confirmReceived(Number(orderId), buyerId);
-  }
 
   @ApiBearerAuth('access-token')
   @Post('create-link')

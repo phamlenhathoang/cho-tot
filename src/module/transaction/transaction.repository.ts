@@ -8,38 +8,30 @@ export class TransactionRepository{
         private readonly prismaService: PrismaService
     ){}
 
-    async createTransaction(orderId: number, vnpTxnRef: string, amount: number, status: TransactionStatus){
+    async createTransaction(data: any){
         return await this.prismaService.transaction.create({
-            data:{
-                orderId: orderId,
-                vnpTxnRef: vnpTxnRef,
-                amount: amount,
-                status: status
-            }
+            data:data
         })
     }
 
-    async getTransaction(vnpTxnRef: string){
-        return await this.prismaService.transaction.findUnique({
+    async getTransaction(orderCode: string){
+        return await this.prismaService.transaction.findFirst({
             where:{
-                vnpTxnRef: vnpTxnRef
+                orderCode: orderCode
+            },
+            include:{
+                order: true
             }
         })
     }
 
-    async updateTransaction(id: number, status: TransactionStatus, vnpTransactionNo: string, bankCode: string, paydate: string, rawIpnResponse: any, tx?: Prisma.TransactionClient){
+    async updateTransaction(transactionId: number, data: any, tx?: Prisma.TransactionClient){
         const prisma = tx || this.prismaService
         return await prisma.transaction.update({
             where:{
-                id: id
+                id: transactionId
             },
-            data:{
-                status: status ? 'SUCCESS' : 'FAILED',
-                vnpTransactionNo: vnpTransactionNo,
-                bankCode: bankCode,
-                payDate: paydate,
-                rawIpnResponse: rawIpnResponse
-            }
+            data: data
         })
     }
 }
