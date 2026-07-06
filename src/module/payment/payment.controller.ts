@@ -57,4 +57,12 @@ export class PaymentController {
     
     return this.paymentService.handlePaymentWebhook(body);
   }
+
+  @Post('payout-webhook')
+  @HttpCode(200) // PayOS cần nhận 200 mới coi là đã xử lý thành công
+  async handlePayOutWebhook(@Body() body: any) {
+    this.logger.log(`Nhận webhook Payout: ${JSON.stringify(body)}`);
+    
+    return this.paymentService.handlePaymentPayOutWebhook(body);
+  }
 }

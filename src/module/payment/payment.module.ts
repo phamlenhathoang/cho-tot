@@ -26,6 +26,7 @@ export class PaymentModule implements OnModuleInit {
   async onModuleInit() {
     try {
       await this.paymentService.confirmWebhookUrl();
+      await this.paymentService.confirmPayOutWebhookUrl();
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       this.logger.error(`Confirm webhook thất bại: ${message}`);

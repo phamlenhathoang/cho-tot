@@ -69,13 +69,14 @@ export class PaymentService {
             cancelUrl: this.payosConfig.getCancelUrl(),
         });
 
-        // await this.orderService.updateOrderById(order.id, { payosOrderCode: orderCode.toString(), checkoutUrl: paymentLink.checkoutUrl, paymentMethod: 'BANKING' })
+        await this.orderService.updateOrderById(order.id, { paymentMethod: 'BANKING' })
         await this.transactionService.createTransaction({
             orderId: order.id,
             totalAmount: amount,
             status: 'PENDING',
             orderCode: orderCode.toString(),
-            urlPayment : paymentLink.checkoutUrl,
+            urlPayment: paymentLink.checkoutUrl,
+            userId: order.buyerId,
         })
 
         return {
@@ -114,10 +115,19 @@ export class PaymentService {
 
     // payment.service.ts
     async confirmWebhookUrl() {
-        const webhookUrl = process.env.PAYOS_THU_WEBHOOK_URL
+        const webhookUrl = this.payosConfig.getPaymentWeebhookUrl()
             ?? 'https://cho-tot-production.up.railway.app/payment/thu';
 
         const result = await this.payos.webhooks.confirm(webhookUrl);
+        this.logger.log(`Đã confirm webhook URL: ${webhookUrl}`);
+        return result;
+    }
+
+    async confirmPayOutWebhookUrl() {
+        const webhookUrl = this.bkConfig.getPaymentPayOutWeebhookUrl()
+            ?? 'https://cho-tot-production.up.railway.app/payment/payout-webhook';
+
+        const result = await this.bk.webhooks.confirm(webhookUrl);
         this.logger.log(`Đã confirm webhook URL: ${webhookUrl}`);
         return result;
     }
@@ -131,7 +141,7 @@ export class PaymentService {
 
             return this.bk.payouts.create({
                 referenceId: reference,
-                amount: Number(order.totalAmount),
+                amount: Number(order.totalAmount - order.shipFee),
                 description: 'Thanh toan',
                 toBin: bank?.bin!,
                 toAccountNumber: bank?.accountNumber!,
@@ -143,7 +153,7 @@ export class PaymentService {
             const bank = order.buyer.banks.find(b => b.isDefault);
             return this.bk.payouts.create({
                 referenceId: reference,
-                amount: Number(order.totalAmount),
+                amount: Number(order.totalAmount - order.shipFee),
                 description: 'Hoan tien',
                 toBin: bank?.bin!,
                 toAccountNumber: bank?.accountNumber!,
@@ -151,5 +161,43 @@ export class PaymentService {
         }
 
         throw new Error(`Trạng thái không hợp lệ để xử lý payout: ${status}`);
+    }
+
+    async handlePaymentPayOutWebhook(body: any) {
+        let webhookData;
+        try {
+            // verify() tự check chữ ký, throw nếu sai
+            webhookData = await this.bk.webhooks.verify(body);
+        } catch (err) {
+            // this.logger.warn(`Chữ ký webhook Thu không hợp lệ: ${err.message}`);
+            throw new BadRequestException('Invalid signature');
+        }
+
+        const { orderCode, code, desc } = webhookData;
+
+        if (code !== '00') {
+            this.logger.warn(`Payment chi thất bại orderCode=${orderCode}, code=${code}, desc=${desc}`);
+            return { success: false, message: `Payment chi thất bại orderCode=${orderCode}, code=${code}, desc=${desc}` };
+        }
+
+        const transaction = await this.transactionService.getTransaction(orderCode.toString());
+        if (!transaction) {
+            this.logger.warn(`Payment chi không tìm thấy orderCode=${orderCode}`);
+            return { success: false, message: `Payment chi không tìm thấy orderCode=${orderCode}` };
+        }
+
+        if (!transaction.order) {
+            this.logger.warn(`Payment chi không tìm thấy Order`);
+            return { success: false, message: `Payment chi không tìm thấy Order` };
+        }
+
+        const totalAmount = Number(transaction.order.totalAmount) - Number(transaction.order.shipFee);
+
+        await this.transactionService.createTransaction({
+            orderId: transaction.orderId,
+            totalAmount: totalAmount,
+            status: 'SUCCESS',
+        });
+        return { success: true };
     }
 }

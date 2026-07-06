@@ -122,7 +122,7 @@ CREATE TABLE `Order` (
     `postId` INTEGER NOT NULL,
     `codeId` VARCHAR(191) NULL,
     `serviceId` INTEGER NULL,
-    `orderStatus` ENUM('CANCELED', 'PENDING', 'ACCEPTED', 'COMPLETED') NOT NULL DEFAULT 'PENDING',
+    `orderStatus` ENUM('CANCELED', 'PENDING', 'ACCEPTED', 'COMPLETED', 'RETURNED') NOT NULL DEFAULT 'PENDING',
     `shipFee` DECIMAL(18, 2) NULL DEFAULT 0,
     `totalAmount` DECIMAL(18, 2) NULL,
     `paymentMethod` ENUM('COD', 'BANKING') NOT NULL DEFAULT 'COD',
@@ -137,6 +137,7 @@ CREATE TABLE `Order` (
 CREATE TABLE `Transaction` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `orderId` INTEGER NOT NULL,
+    `userId` INTEGER NULL,
     `totalAmount` DECIMAL(18, 2) NULL,
     `status` ENUM('PENDING', 'SUCCESS', 'FAILED') NOT NULL DEFAULT 'PENDING',
     `orderCode` VARCHAR(191) NOT NULL,
@@ -147,7 +148,6 @@ CREATE TABLE `Transaction` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `Transaction_orderId_key`(`orderId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -211,6 +211,9 @@ ALTER TABLE `Order` ADD CONSTRAINT `Order_postId_fkey` FOREIGN KEY (`postId`) RE
 
 -- AddForeignKey
 ALTER TABLE `Transaction` ADD CONSTRAINT `Transaction_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `Order`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Transaction` ADD CONSTRAINT `Transaction_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `OrderTracking` ADD CONSTRAINT `OrderTracking_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `Order`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

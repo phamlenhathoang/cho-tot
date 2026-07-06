@@ -166,15 +166,19 @@ export class OrderService {
                 return await this.transactionTrackingService.execute(
                     async (tx) => {
                         var orderStatus 
+                        var paymentStatus
                         if (status === 'DELIVERED') {
                             orderStatus = OrderStatus.COMPLETED
+                            paymentStatus = PaymentStatus.RELEASED
                             await this.paymentService.refund(order, status)
                         }
                         if(status === 'RETURNED'){
-                            orderStatus = OrderStatus.CANCELED
+                            orderStatus = OrderStatus.RETURNED
+                            paymentStatus = PaymentStatus.REFUND
                             await this.paymentService.refund(order, status)
                         }
-                        await this.orderRepo.updateStatusOrder(orderId, orderStatus, tx);
+                        // await this.orderRepo.updateStatusOrder(orderId, orderStatus, tx);
+                        await this.orderRepo.updateOrderById(orderId, { orderStatus: orderStatus, paymentStatus: paymentStatus }, tx);
                     }
                 )
             }

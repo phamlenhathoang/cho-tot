@@ -138,7 +138,6 @@ export class OrderRepository {
             data: {
                 orderStatus: status,
                 paymentStatus: 'PAID',
-                releasedAt: new Date(),
             }
         })
     }
@@ -177,14 +176,14 @@ export class OrderRepository {
                 id: id
             }, data: {
                 paymentStatus: 'PAID',
-                
             }
         })
     }
     
 
-    async updateOrderById(orderId: number, data: any) {
-        return await this.prismaService.order.update({
+    async updateOrderById(orderId: number, data: any, tx?: Prisma.TransactionClient) {
+        const prisma = tx || this.prismaService
+        return await prisma.order.update({
             where: {
                 id: orderId
             },

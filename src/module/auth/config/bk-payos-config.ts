@@ -30,4 +30,8 @@ export class BkPayosConfig{
     getBkUrl(){
         return this.configService.getOrThrow<string>("PAYOS_URL")
     }
+
+    getPaymentPayOutWeebhookUrl(){
+        return this.configService.getOrThrow<string>("PAYOS_PAYOUT_WEBHOOK_URL")
+    }
 } 
