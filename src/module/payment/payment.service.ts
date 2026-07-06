@@ -177,6 +177,16 @@ export class PaymentService {
         return { success: true };
     }
 
+    // payment.service.ts
+    async confirmWebhookUrl() {
+        const webhookUrl = process.env.PAYOS_THU_WEBHOOK_URL
+            ?? 'https://cho-tot-production.up.railway.app/payment/thu';
+
+        const result = await this.payos.webhooks.confirm(webhookUrl);
+        this.logger.log(`Đã confirm webhook URL: ${webhookUrl}`);
+        return result;
+    }
+
 
     async refund(order: any, status: any) {
         const reference = order.payosOrderCode;

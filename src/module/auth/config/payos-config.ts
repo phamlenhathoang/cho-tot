@@ -26,4 +26,8 @@ export class PayosConfig{
     getCancelUrl(){
         return this.configService.getOrThrow<string>("CANCEL_URL")
     }
+
+    getPaymentWeebhookUrl(){
+        return this.configService.getOrThrow<string>("PAYOS_PAYMENT_WEBHOOK_URL")
+    }
 }

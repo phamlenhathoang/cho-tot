@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { forwardRef, Logger, Module, OnModuleInit } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { PaymentController } from './payment.controller';
 import { PaymentRepository } from './payment.repository';
@@ -11,9 +11,24 @@ import { UserModule } from '../user/user.module';
 import { OrderModule } from '../order/order.module';
 
 @Module({
-  imports:[TransactionModule, UserModule, forwardRef(() => OrderModule)],
+  imports: [TransactionModule, UserModule, forwardRef(() => OrderModule)],
   controllers: [PaymentController],
   providers: [PaymentService, PaymentRepository, VNPAYConfig, TransactionTrackingService, PayosConfig, BkPayosConfig],
   exports: [PaymentService, PaymentRepository]
 })
-export class PaymentModule {}
+export class PaymentModule implements OnModuleInit {
+
+  private readonly logger = new Logger(PaymentModule.name);
+
+  constructor(private readonly paymentService: PaymentService) { }
+
+
+  async onModuleInit() {
+    try {
+      await this.paymentService.confirmWebhookUrl();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error(`Confirm webhook thất bại: ${message}`);
+    }
+  }
+}
