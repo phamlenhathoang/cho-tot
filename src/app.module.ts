@@ -25,6 +25,7 @@ import { CloudnaryModule } from './module/cloudnary/cloudnary.module';
 import { ConversationModule } from './module/conversation/conversation.module';
 import { PaymentModule } from './module/payment/payment.module';
 import { TransactionModule } from './module/transaction/transaction.module';
+import { BankModule } from './module/bank/bank.module';
 
 @Module({
   imports: [UserModule, AuthModule, CategotyModule, ThumpnailModule, PostModule, ChatModule,
@@ -45,6 +46,7 @@ import { TransactionModule } from './module/transaction/transaction.module';
     ConversationModule,
     PaymentModule,
     TransactionModule,
+    BankModule,
 
     // ServeStaticModule.forRoot({
     //   rootPath: join(__dirname, '..', 'module','chat','html'), // Đường dẫn tới thư mục chứa index.html

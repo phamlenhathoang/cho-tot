@@ -32,7 +32,11 @@ export class CategoryRepository{
     }
 
     async getAll(){
-        return await this.prismaService.category.findMany()
+        return await this.prismaService.category.findMany({
+            where:{
+                isActive: true
+            }
+        })
     }
 
     async deleteCategory(id: number){
@@ -41,7 +45,7 @@ export class CategoryRepository{
                 id: id
             },
             data:{
-                isActive: true
+                isActive: false
             }
         })
     }

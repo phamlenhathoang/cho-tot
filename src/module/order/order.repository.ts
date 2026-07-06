@@ -63,13 +63,31 @@ export class OrderRepository {
                     {
                         sellerId: userId
                     }
-                ]
+                ],
             },
             include: {
                 post: true,
                 trackings: {
                     orderBy: {
                         createAt: 'desc'
+                    }
+                },
+                buyer: {
+                    include: {
+                        banks: {
+                            where: {
+                                isDefault: true
+                            }
+                        }
+                    }
+                },
+                seller: {
+                    include: {
+                        banks: {
+                            where: {
+                                isDefault: true
+                            }
+                        }
                     }
                 }
             }
@@ -110,13 +128,16 @@ export class OrderRepository {
         })
     }
 
-    async updateStatusOrder(id: number, status: OrderStatus) {
-        return await this.prismaService.order.update({
+    async updateStatusOrder(id: number, status: OrderStatus, tx ?: Prisma.TransactionClient) {
+        const prisma = tx || this.prismaService
+        return await prisma.order.update({
             where: {
                 id: id
             },
             data: {
-                orderStatus: status
+                orderStatus: status,
+                paymentStatus: 'PAID',
+                releasedAt: new Date(),
             }
         })
     }
@@ -137,14 +158,35 @@ export class OrderRepository {
 
     async updateStatusOrderPayment(id: number, paymentStatus: PaymentStatus, releaseAt: Date, orderStatus: OrderStatus) {
         return await this.prismaService.order.update({
-            where:{
+            where: {
                 id: id
             },
-            data:{
+            data: {
                 paymentStatus: paymentStatus,
                 releasedAt: releaseAt,
                 orderStatus: orderStatus
             }
+        })
+    }
+
+    async markAsPaid(id: number) {
+        return await this.prismaService.order.update({
+            where: {
+                id: id
+            }, data: {
+                paymentStatus: 'PAID',
+                paidAt: Date.now().toString(),
+            }
+        })
+    }
+    
+
+    async updateOrderById(orderId: number, data: any) {
+        return await this.prismaService.order.update({
+            where: {
+                id: orderId
+            },
+            data: data
         })
     }
 }

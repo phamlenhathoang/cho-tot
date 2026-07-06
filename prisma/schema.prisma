@@ -40,7 +40,25 @@ model User {
   buyerOrders  Order[] @relation("BuyerOrders")
   buyerOffers  Offer[] @relation("BuyerOffers")
   addresss    Address[]
+  banks   Bank[] @relation("UserBank")
 } 
+
+model Bank {
+  id Int @id @default(autoincrement())
+
+  userId Int
+  user User @relation("UserBank", fields: [userId], references: [id])
+
+  bin String
+  accountNumber String
+  name String
+
+  isDefault  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([bin, accountNumber])
+}
 
 model Address{
   id  Int   @id  @default(autoincrement())
@@ -179,9 +197,12 @@ model Order{
   paymentMethod   PaymentMethod  @default(COD) 
   paymentStatus   PaymentStatus? @default(UNPAID)
 
-  paidAt          DateTime?
-  releasedAt      DateTime?
-  autoReleaseAt   DateTime? 
+  payosOrderCode String?
+  checkoutUrl String?
+
+  paidAt          DateTime?  //Thời điểm buyer thanh toán thành  công
+  releasedAt      DateTime?  //Thời điểm trả tiền về thành công 
+  autoReleaseAt   DateTime?   //Thời điểm dự kiến hệ thống sẽ thanh toán
   createdAt DateTime @default(now())
 
   trackings    OrderTracking[]  @relation("TrackingOrder")

@@ -47,8 +47,6 @@ export class OfferService {
                 }
             )
 
-            console.log(shipFee)
-
             const totalShipFee = shipFee.data.total;
 
             return await this.transactionService.execute(

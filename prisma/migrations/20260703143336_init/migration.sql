@@ -18,6 +18,21 @@ CREATE TABLE `User` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `Bank` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL,
+    `bin` VARCHAR(191) NOT NULL,
+    `accountNumber` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `isDefault` BOOLEAN NOT NULL DEFAULT true,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Bank_bin_accountNumber_key`(`bin`, `accountNumber`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Address` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userId` INTEGER NOT NULL,
@@ -112,6 +127,8 @@ CREATE TABLE `Order` (
     `totalAmount` DECIMAL(18, 2) NULL,
     `paymentMethod` ENUM('COD', 'BANKING') NOT NULL DEFAULT 'COD',
     `paymentStatus` ENUM('UNPAID', 'PAID', 'RELEASED', 'REFUND') NULL DEFAULT 'UNPAID',
+    `payosOrderCode` VARCHAR(191) NULL,
+    `checkoutUrl` VARCHAR(191) NULL,
     `paidAt` DATETIME(3) NULL,
     `releasedAt` DATETIME(3) NULL,
     `autoReleaseAt` DATETIME(3) NULL,
@@ -160,6 +177,9 @@ CREATE TABLE `Offer` (
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `Bank` ADD CONSTRAINT `Bank_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Address` ADD CONSTRAINT `Address_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

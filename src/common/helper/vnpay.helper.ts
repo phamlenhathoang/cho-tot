@@ -28,7 +28,7 @@ export interface CreateVnpayUrlParams {
   amount: number; // đơn vị VND, CHƯA x100
   orderInfo: string;
   ipAddr: string;
-  locale?: 'vn' | 'en';
+  locale?: 'VN' | 'EN';
 }
 
 export function createVnpayPaymentUrl(params: CreateVnpayUrlParams): string {
@@ -43,7 +43,7 @@ export function createVnpayPaymentUrl(params: CreateVnpayUrlParams): string {
     vnp_CurrCode: 'VND',
     vnp_TxnRef: params.txnRef,
     vnp_OrderInfo: params.orderInfo,
-    vnp_OrderType: 'other',
+    vnp_OrderType: 'orther',
     vnp_Amount: params.amount * 100, // VNPay luôn yêu cầu x100
     vnp_ReturnUrl: params.vnpReturnUrl,
     vnp_IpAddr: params.ipAddr,

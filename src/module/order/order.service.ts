@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { OrderRepository } from './order.repository';
 import { CreateOrderDTO } from './dto/create-order.dto';
 import { UserRepo } from '../user/user.repository';
@@ -12,6 +12,7 @@ import { TrackingService } from '../tracking/tracking.service';
 import { TransactionTrackingService } from '../transaction-tracking/tracsaction-tracking.service';
 import { OfferRepository } from '../offer/offer.repository';
 import { mapGhnStatusToEnum } from 'src/common/helper/mapper-status-order-tracking';
+import { PaymentService } from '../payment/payment.service';
 
 @Injectable()
 export class OrderService {
@@ -24,10 +25,12 @@ export class OrderService {
         private readonly ghnService: GhnService,
         private readonly trackingService: TrackingService,
         private readonly transactionService: TransactionTrackingService,
-        private readonly offerRepo: OfferRepository
+        private readonly offerRepo: OfferRepository,
+        @Inject(forwardRef(() => PaymentService))
+        private readonly paymentService: PaymentService
     ) { }
 
-    async createOrder(offer: any, tx: Prisma.TransactionClient, serviceId : number, totalShipFee : any) {
+    async createOrder(offer: any, tx: Prisma.TransactionClient, serviceId: number, totalShipFee: any) {
         try {
             const price = Number(offer.price)
             const prisma = tx;
@@ -92,7 +95,7 @@ export class OrderService {
                     }
 
                     const trackingData = await this.ghnService.getTrackingInfo(codeId);
-                    if(!trackingData){
+                    if (!trackingData) {
                         throw new NotFoundException('Tracking does not exist');
                     }
 
@@ -101,19 +104,23 @@ export class OrderService {
                         statusOrderTracking: trackingData,
                     })
 
+                    if (updateOrderDto.paymentMethod === 'BANKING') {
+                        await this.paymentService.createPaymentPayOsUrl(order)
+                    }
+
                     return await this.orderRepo.updateOrder(order.id, codeId, updateOrderDto.orderStatus)
 
                     break;
-                
+
                 case OrderStatus.CANCELED:
                     if (order.orderStatus != OrderStatus.PENDING) {
                         throw new BadRequestException("Order must be pending status");
                     }
 
                     return await this.transactionService.execute(
-                        async(tx) => {
-                            const updatedOrder = await this.orderRepo.updateOrder(order.id, updateOrderDto.orderStatus,tx);
-                            await this.offerRepo.updateOffer(order.post.offers.find(o => o.buyerId === order.buyerId && o.postId === order.postId)?.id!, OfferStatus.CANCELED,tx);
+                        async (tx) => {
+                            const updatedOrder = await this.orderRepo.updateOrder(order.id, updateOrderDto.orderStatus, tx);
+                            await this.offerRepo.updateOffer(order.post.offers.find(o => o.buyerId === order.buyerId && o.postId === order.postId)?.id!, OfferStatus.CANCELED, tx);
                             return updatedOrder;
                         }
                     )
@@ -153,11 +160,20 @@ export class OrderService {
                     })
                 }
 
-                if(status === 'DELIVERED'){
-                    await this.orderRepo.updateStatusOrder(orderId, OrderStatus.COMPLETED);
-                }
-                
-                return await this.orderRepo.getOrder(orderId, user.id);
+                return await this.transactionService.execute(
+                    async (tx) => {
+                        var orderStatus 
+                        if (status === 'DELIVERED') {
+                            orderStatus = OrderStatus.COMPLETED
+                            await this.paymentService.refund(order, status)
+                        }
+                        if(status === 'RETURNED'){
+                            orderStatus = OrderStatus.CANCELED
+                            await this.paymentService.refund(order, status)
+                        }
+                        await this.orderRepo.updateStatusOrder(orderId, orderStatus, tx);
+                    }
+                )
             }
 
             return order;
@@ -179,15 +195,23 @@ export class OrderService {
         return await this.orderRepo.getOrderByPostId(postId, user.id);
     }
 
-    async getAll(){
+    async getAll() {
         return await this.orderRepo.getAll()
     }
 
-    async updateReleaseAt(id: number, autoReleaseAt: Date, tx ?: Prisma.TransactionClient){
+    async updateReleaseAt(id: number, autoReleaseAt: Date, tx?: Prisma.TransactionClient) {
         return await this.orderRepo.updateReleaseAt(id, autoReleaseAt, tx);
     }
-    
-    async updateStatusOrder(id: number, paymentStatus: PaymentStatus, releaseAt: Date, orderStatus: OrderStatus){
+
+    async updateStatusOrder(id: number, paymentStatus: PaymentStatus, releaseAt: Date, orderStatus: OrderStatus) {
         return await this.orderRepo.updateStatusOrderPayment(id, paymentStatus, releaseAt, orderStatus)
+    }
+
+    async markAsPaid(id: number) {
+        return await this.orderRepo.markAsPaid
+    }
+
+    async updateOrderById(id: number, data: any) {
+        return await this.orderRepo.updateOrderById(id, data)
     }
 }

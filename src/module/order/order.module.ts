@@ -11,12 +11,14 @@ import { GhnModule } from '../ghn/ghn.module';
 import { TrackingModule } from '../tracking/tracking.module';
 import { TransactionTrackingService } from '../transaction-tracking/tracsaction-tracking.service';
 import { OfferModule } from '../offer/offer.module';
+import { PaymentModule } from '../payment/payment.module';
 
 @Module({
   imports:[UserModule, PostModule, MapModule, HttpModule, 
+    forwardRef(() => PaymentModule),
     forwardRef(() => OfferModule),
     forwardRef(() => TrackingModule),
-    forwardRef(() => GhnModule)
+    forwardRef(() => GhnModule),
   ],
   controllers: [OrderController],
   providers: [OrderService, OrderRepository, GHTKConfig, TransactionTrackingService],

@@ -11,7 +11,7 @@ export class CategoryService {
 
     ) { }
 
-    async   createCategory(createCategory: CategoryDTO) {
+    async createCategory(createCategory: CategoryDTO) {
         try {
             const checkCategory = await this.categoryRepo.getCategoryByName(createCategory.name);
 
