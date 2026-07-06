@@ -215,7 +215,7 @@ export class OrderService {
             async (tx) => {
                 await this.orderRepo.markAsPaid(id, tx);
                 await this.transactionService.updateTransaction(id, 
-                    { status: 'PAID',
+                    { status: 'SUCCESS',
                      paidAt: new Date(),
                      releasedAt: new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000),
                      autoReleaseAt: new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000) },
