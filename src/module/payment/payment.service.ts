@@ -101,7 +101,7 @@ export class PaymentService {
             return { success: false, message: `Payment Thu thất bại orderCode=${orderCode}, code=${code}, desc=${desc}` };
         }
 
-        const order = await this.transactionService.getTransaction(orderCode);
+        const order = await this.transactionService.getTransaction(orderCode.toString());
         if (!order) {
             this.logger.warn(`Payment Thu không tìm thấy orderCode=${orderCode}`);
             return { success: false, message: `Payment Thu không tìm thấy orderCode=${orderCode}` };
